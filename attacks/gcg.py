@@ -3,9 +3,22 @@ import logging
 import re
 from typing import Dict, Any, List, Tuple
 from dataclasses import dataclass
-from metrics.collector import AttackResult
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AttackResult:
+    goal: str = ""
+    task_success: bool = False
+    queries: int = 0
+    iterations: int = 0
+    stages: List[Dict[str, Any]] = None
+    fusion_strategy: str = ""
+    correct_tool_calls: int = 0
+    wrong_tool_calls: int = 0
+    jailbreak_prompt: str = ""
+    jailbreak_response: str = ""
 
 class GCGAttackLoop:
     def __init__(self, target_lm, judge_lm, sandbox_builder_fn, max_iterations=10, use_gcg=True):

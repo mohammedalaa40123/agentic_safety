@@ -1,4 +1,4 @@
-experiment_name: eval_qwen_baseline
+experiment_name: eval_qwen_baseline_100
 description: Baseline evaluation of Qwen with 5/5 safe/unsafe data, no defenses or
   attacks.
 mode: baseline
@@ -40,5 +40,5 @@ defenses:
   active: []
 baseline:  
   enabled: true
-goals_path: data/agentic_scenarios_10_mixed.json
-output_dir: results/agentic_experiments
+goals_path: data/agentic_scenarios_100.json
+output_dir: results/agentic_experiments_100
