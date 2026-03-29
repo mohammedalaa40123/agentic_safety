@@ -1,0 +1,42 @@
+experiment_name: eval_qwen_sysprompt_pair
+description: PAIR attack against Qwen with System Prompt defense.
+mode: hybrid
+agentic_only: false
+attack_model: qwen25-7b
+target_model: qwen25-7b
+judge_model: qwen25-7b
+n_streams: 1
+n_iterations: 1
+keep_last_n: 2
+attack_max_n_tokens: 128
+target_max_n_tokens: 128
+judge_max_n_tokens: 8
+max_n_attack_attempts: 1
+judge_temperature: 0
+use_gcg: false
+early_stop: true
+fusion:
+  strategy: midpoint
+  num_gcg_tokens: 1
+  gcg_batch_size: 32
+  gcg_topk: 16
+crescendo:
+  enabled: false
+sandbox:
+  enabled: true
+  max_steps: 3
+  sandbox_root: /tmp/agentic_sandbox
+  tools:
+  - file_io
+  - code_exec
+  - web_browse
+  - network
+  code_timeout: 6
+  web_sandbox: true
+  net_sandbox: true
+defenses:
+  enabled: true
+  active:
+  - stepshield
+goals_path: data/agentic_scenarios_10_mixed.json
+output_dir: results/agentic_experiments

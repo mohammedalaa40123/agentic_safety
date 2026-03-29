@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=agentic_llama3_sorry50
+#SBATCH -A standby
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --mem=80GB
+#SBATCH --gpus-per-node=1
+#SBATCH --time=05:00:00
+#SBATCH --constraint=K
+#SBATCH --output=./agentic_safety/%x_%j.out
+#SBATCH --error=./agentic_safety/%x_%j.err
+
+# Required: set WANDB_API_KEY in your environment or export below
+# export WANDB_API_KEY=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
+# Optional: export WANDB_ENTITY to override config
+# export WANDB_ENTITY=your_entity
+
+source /etc/profile.d/modules.sh
+module load conda
+conda activate /scratch/gilbreth/mohame43/jail
+
+cd /depot/davisjam/data/mohamed/agentic_safety
+python3 run.py --config configs/agentic_llama3.yaml --output-dir results/agentic_llama3

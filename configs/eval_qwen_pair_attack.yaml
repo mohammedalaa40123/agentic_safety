@@ -1,0 +1,49 @@
+experiment_name: eval_qwen_pair
+output_dir: results/agentic_experiments
+mode: attack            # attack | baseline
+models:
+  attack_model: qwen25-7b
+  target_model: qwen25-7b
+  judge_model: qwen25-7b
+  attack_max_n_tokens: 500
+  target_max_n_tokens: 150
+  judge_max_n_tokens: 10
+sandbox:
+  enabled: true
+  sandbox_root: /tmp/agentic_sandbox
+  tools: [file_io, code_exec, web_browse, network]
+  code_timeout: 10
+  web_timeout: 10
+  net_sandbox: true
+attacks:
+  - name: pair
+    enabled: true
+    n_iterations: 5
+  - name: crescendo
+    enabled: false
+    max_turns: 10
+    patience: 3
+  - name: gcg
+    enabled: false
+    num_gcg_tokens: 1
+    gcg_batch_size: 512
+  - name: prompt_fusion
+    enabled: false
+    strategy: midpoint
+    num_gcg_tokens: 1
+baseline:
+  enabled: false        # true => no attacks, just baseline agent run (or skip attack loops)
+defenses:
+  enabled: false
+  active: [jbshield, stepshield]
+  jbshield:
+    n_mutations: 5
+    divergence_threshold: 0.6
+  stepshield:
+    harm_threshold: 0.7
+wandb:
+  enabled: true
+  project: agentic-safety
+logging:
+  verbose: true
+goals_path: data/agentic_scenarios_10_mixed.json

@@ -1,0 +1,27 @@
+[project]
+name = "agentic-safety"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "accelerate>=1.13.0",
+    "anthropic>=0.86.0",
+    "datasets>=4.8.4",
+    "evaluate>=0.4.6",
+    "fastchat>=0.1.0",
+    "google-generativeai>=0.8.6",
+    "huggingface-hub>=1.8.0",
+    "matplotlib>=3.10.8",
+    "numpy>=2.2.6",
+    "openai>=2.30.0",
+    "pandas>=2.3.3",
+    "python-dotenv>=1.2.2",
+    "pytz>=2026.1.post1",
+    "scipy>=1.15.3",
+    "sentencepiece>=0.2.1",
+    "torch>=2.11.0",
+    "tqdm>=4.67.3",
+    "transformers>=5.3.0",
+    "wandb>=0.25.1",
+]
