@@ -15,6 +15,13 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple
 
+try:
+    import wandb  # type: ignore
+    _WANDB_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    wandb = None
+    _WANDB_AVAILABLE = False
+
 from metrics.collector import MetricsCollector
 from runner.agentic_loop import run_agentic_loop
 from runner.attacks import build_attack_runners
@@ -93,6 +100,19 @@ def _auto_success(is_malicious_flag: bool, tool_calls: List[dict]) -> bool:
     return bool(is_malicious_flag and tool_calls)
 
 
+def _init_wandb(cfg: RunConfig):
+    if not cfg.wandb.enabled:
+        return None
+    if not _WANDB_AVAILABLE:
+        logger.warning("wandb not installed; disable wandb in config or pip install wandb")
+        return None
+    project = cfg.wandb.project or cfg.experiment_name
+    entity = cfg.wandb.entity or os.getenv("WANDB_ENTITY")
+    run_name = cfg.wandb.run_name or cfg.experiment_name
+    tags = cfg.wandb.tags or []
+    return wandb.init(project=project, entity=entity, name=run_name, config=cfg.__dict__, tags=tags)
+
+
 def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, List[dict]],
                      goals: List[Dict[str, str]], metrics: MetricsCollector) -> None:
     sandbox, hf_tools = sandbox_tuple
@@ -148,6 +168,8 @@ def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, L
 
         status = "✓" if task_success else "✗"
         logger.info(f"  {status} agentic | tools={len(tool_log)} | duration={duration:.1f}s")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Agentic response: {response[:400]}")
 
 
 def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]], metrics: MetricsCollector,
@@ -160,6 +182,8 @@ def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]],
         malicious_flag = is_malicious(category)
 
         logger.info(f"[{idx}/{len(goals)}] Category={category} Goal={goal[:80]}...")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Target expectation: {target_str[:200]}")
 
         for runner in attack_runners:
             spec = runner.spec
@@ -229,6 +253,9 @@ def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]],
             logger.info(
                 f"  {status} | queries={outcome.queries} | duration={outcome.duration:.1f}s | attack={outcome.attack_name}"
             )
+            if logger.isEnabledFor(logging.DEBUG):
+                resp_preview = (outcome.jailbreak_response or "")[:500].replace("\n", " ")
+                logger.debug(f"  Response preview: {resp_preview}")
             if outcome.success and spec.stop_on_success:
                 logger.info("  stop_on_success triggered; moving to next goal")
                 break
@@ -278,7 +305,8 @@ def main() -> None:
     json_path = os.path.join(cfg.output_dir, f"results_{cfg.experiment_name}_{atk}_{tgt}_{timestamp}.json")
     log_run_header(logger, cfg, log_file, output_paths=f"CSV: {csv_path}\nJSON: {json_path}")
 
-    metrics = MetricsCollector()
+    wandb_run = _init_wandb(cfg)
+    metrics = MetricsCollector(wandb_run=wandb_run)
 
     if cfg.mode == "agentic":
         sandbox_tuple = sandbox_builder()

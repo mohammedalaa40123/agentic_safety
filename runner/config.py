@@ -60,7 +60,7 @@ class WandbConfig:
 
 @dataclass
 class LoggingConfig:
-    verbose: bool = False
+    verbose: bool = True
 
 
 @dataclass

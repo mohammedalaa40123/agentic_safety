@@ -1,41 +1,49 @@
-experiment_name: eval_qwen_crescendo_attack
-description: Crescendo multi-turn attack on Qwen.
-mode: hybrid
-agentic_only: false
-attack_model: qwen25-7b
-target_model: qwen25-7b
-judge_model: qwen25-7b
-n_streams: 1
-n_iterations: 1
-keep_last_n: 2
-attack_max_n_tokens: 128
-target_max_n_tokens: 128
-judge_max_n_tokens: 8
-max_n_attack_attempts: 1
-judge_temperature: 0
-use_gcg: false
-early_stop: true
-fusion:
-  strategy: midpoint
-  num_gcg_tokens: 1
-  gcg_batch_size: 32
-  gcg_topk: 16
-crescendo:
-  enabled: true
+experiment_name: eval_qwen_cresendo
+output_dir: results/agentic_experiments
+mode: attack            # attack | baseline
+models:
+  attack_model: qwen25-7b
+  target_model: qwen25-7b
+  judge_model: qwen25-7b
+  attack_max_n_tokens: 500
+  target_max_n_tokens: 150
+  judge_max_n_tokens: 10
 sandbox:
   enabled: true
-  max_steps: 3
   sandbox_root: /tmp/agentic_sandbox
-  tools:
-  - file_io
-  - code_exec
-  - web_browse
-  - network
-  code_timeout: 6
-  web_sandbox: true
+  tools: [file_io, code_exec, web_browse, network]
+  code_timeout: 10
+  web_timeout: 10
   net_sandbox: true
+attacks:
+  - name: pair
+    enabled: false
+    n_iterations: 5
+  - name: crescendo
+    enabled: true
+    max_turns: 5
+    patience: 5
+  - name: gcg
+    enabled: false
+    num_gcg_tokens: 1
+    gcg_batch_size: 512
+  - name: prompt_fusion
+    enabled: false
+    strategy: midpoint
+    num_gcg_tokens: 1
+baseline:
+  enabled: false        # true => no attacks, just baseline agent run (or skip attack loops)
 defenses:
   enabled: false
-  active: []
+  active: [jbshield, stepshield]
+  jbshield:
+    n_mutations: 5
+    divergence_threshold: 0.6
+  stepshield:
+    harm_threshold: 0.7
+wandb:
+  enabled: true
+  project: agentic-safety
+logging:
+  verbose: true
 goals_path: data/agentic_scenarios_10_mixed.json
-output_dir: results/agentic_experiments

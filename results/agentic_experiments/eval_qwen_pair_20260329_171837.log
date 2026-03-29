@@ -1,3 +1,0 @@
-17:18:37 [INFO] agentic_safety: Loaded 10 goals from data/agentic_scenarios_10_mixed.json
-17:18:37 [INFO] runner.models: Loading attack model: qwen25-7b
-17:18:37 [INFO] accelerate.utils.modeling: We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).

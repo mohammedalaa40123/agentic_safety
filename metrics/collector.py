@@ -170,6 +170,7 @@ class MetricsCollector:
         self.qtj.update(result.success, result.queries)
 
         if self.wandb_run is not None:
+            defense_bypassed_val = float(rec.defense_bypassed) if rec.defense_bypassed is not None else 0.0
             self.wandb_run.log({
                 "asr/step_success": float(result.success),
                 "asr/queries": result.queries,
@@ -178,7 +179,7 @@ class MetricsCollector:
                 "tool/total_calls": rec.tool_calls_total,
                 "tool/harmful_calls": rec.tool_calls_harmful,
                 "defense/defense_name": defense_name or "",
-                "defense/defense_bypassed": float(rec.defense_bypassed),
+                "defense/defense_bypassed": defense_bypassed_val,
             })
 
     def summary(self) -> Dict[str, Any]:
