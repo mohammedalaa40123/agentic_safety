@@ -218,7 +218,7 @@ class MetricsCollector:
             ),
         }
 
-    def summary_by_category(self) -> Dict[str, Dict[str, Any]]:
+    def summary_by_category(self):
         """Return per-category metrics."""
         from collections import defaultdict
         cats: Dict[str, List[ExperimentRecord]] = defaultdict(list)

@@ -47,6 +47,16 @@ class CodeExecTool(ToolBase):
         """
         is_harmful = classify_code_harm(code)
 
+        # Hard block obviously harmful patterns so we don't touch host files.
+        if is_harmful:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                output="Blocked potentially harmful code (os/system/rm/requests/socket).",
+                is_harmful=True,
+                metadata={"blocked": True},
+            )
+
         # Normalize escaped newlines/tabs that frequently arrive from JSON tool calls
         if isinstance(code, str):
             if "\\n" in code:
