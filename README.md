@@ -32,7 +32,7 @@ See [runner/config.py](runner/config.py) for all fields. Key sections:
 - `mode`: `attack` (default), `agentic`, or `baseline`
 - `output_dir`: where CSV/JSON/logs are written
 - `goals_path`: JSON/CSV goals file
-- `models`: `attack_model`, `target_model`, `judge_model`, token limits
+- `models`: `attack_model`, `target_model`, `judge_model`, token limits, optional per-model rate limits (`attack_calls_per_minute`, `target_calls_per_minute`, `judge_calls_per_minute`)
 - `sandbox`: `enabled`, `tools` (file_io, code_exec, web_browse, network), timeouts, max_steps
 - `attacks`: ordered list of attack specs `{name, enabled, stop_on_success, params}`; defaults to `pair`
 - `baseline`: `{enabled}` to prepend a direct/baseline run
@@ -80,5 +80,6 @@ Flags:
 - Sandbox: set `sandbox.enabled: true` and choose tools; tool calls in malicious goals mark jailbreak success.
 - Defenses: configure `defenses.enabled: true` and list `active` defenses; prompt/response filters can block and mark defense responses.
 - Models: `runner/models.py` maps short names to HF IDs; adjust paths there if you host models elsewhere.
+- Purdue GenAI Studio API: use model names prefixed with `genai:` (for example `genai:llama3.1:latest`) and set `GENAI_STUDIO_API_KEY` (optional overrides: `GENAI_STUDIO_API_URL`, `GENAI_STUDIO_TIMEOUT_SEC`).
 - Goals: JSON array of `{goal, target, category}` or CSV with `goal/prompt`, `target/target_str`, `category`.
 - Performance: lower `attacks[*].params.n_iterations` or sandbox `max_steps` to speed up; prefer smaller models for quick smoke runs.

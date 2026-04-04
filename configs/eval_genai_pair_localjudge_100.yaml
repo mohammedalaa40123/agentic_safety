@@ -1,0 +1,57 @@
+experiment_name: eval_genaistudio_pair_localjudge_100
+description: PAIR attack with Purdue GenAI Studio API attacker/target and local Llama Guard 3 judge on 100 goals.
+mode: attack
+output_dir: results/agentic_experiments_100
+goals_path: data/agentic_scenarios_100.json
+
+models:
+  attack_model: genai:llama3.1:latest
+  target_model: genai:llama3.1:latest
+  judge_model: meta-llama/Llama-Guard-3-8B
+  attack_max_n_tokens: 500
+  target_max_n_tokens: 150
+  judge_max_n_tokens: 256
+  attack_calls_per_minute: 20
+  target_calls_per_minute: 20
+  judge_calls_per_minute: 20
+
+sandbox:
+  enabled: true
+  sandbox_root: /tmp/agentic_sandbox
+  tools: [file_io, code_exec, web_browse, network]
+  code_timeout: 10
+  web_timeout: 10
+  net_sandbox: true
+  web_sandbox: true
+  max_steps: 5
+
+attacks:
+  - name: pair
+    enabled: true
+    n_iterations: 5
+  - name: crescendo
+    enabled: false
+    max_turns: 5
+    patience: 5
+  - name: gcg
+    enabled: false
+    num_gcg_tokens: 1
+    gcg_batch_size: 512
+  - name: prompt_fusion
+    enabled: false
+    strategy: midpoint
+    num_gcg_tokens: 1
+
+baseline:
+  enabled: false
+
+defenses:
+  enabled: false
+  active: []
+
+wandb:
+  enabled: true
+  project: agentic-safety
+
+logging:
+  verbose: true

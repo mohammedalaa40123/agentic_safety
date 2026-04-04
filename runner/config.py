@@ -12,6 +12,9 @@ class ModelConfig:
     attack_max_n_tokens: int = 500
     target_max_n_tokens: int = 150
     judge_max_n_tokens: int = 10
+    attack_calls_per_minute: int = 0
+    target_calls_per_minute: int = 0
+    judge_calls_per_minute: int = 0
 
 
 @dataclass
@@ -116,7 +119,17 @@ def load_config(path: str) -> RunConfig:
 
     # --- Legacy top-level compatibility ------------------------------------
     legacy_models = data.get("models", {}) or {}
-    for key in ["attack_model", "target_model", "judge_model", "attack_max_n_tokens", "target_max_n_tokens", "judge_max_n_tokens"]:
+    for key in [
+        "attack_model",
+        "target_model",
+        "judge_model",
+        "attack_max_n_tokens",
+        "target_max_n_tokens",
+        "judge_max_n_tokens",
+        "attack_calls_per_minute",
+        "target_calls_per_minute",
+        "judge_calls_per_minute",
+    ]:
         if key in data and key not in legacy_models:
             legacy_models[key] = data[key]
 
@@ -157,6 +170,9 @@ def load_config(path: str) -> RunConfig:
         attack_max_n_tokens=models.get("attack_max_n_tokens", cfg.models.attack_max_n_tokens),
         target_max_n_tokens=models.get("target_max_n_tokens", cfg.models.target_max_n_tokens),
         judge_max_n_tokens=models.get("judge_max_n_tokens", cfg.models.judge_max_n_tokens),
+        attack_calls_per_minute=models.get("attack_calls_per_minute", cfg.models.attack_calls_per_minute),
+        target_calls_per_minute=models.get("target_calls_per_minute", cfg.models.target_calls_per_minute),
+        judge_calls_per_minute=models.get("judge_calls_per_minute", cfg.models.judge_calls_per_minute),
     )
 
     sandbox = data.get("sandbox", {})

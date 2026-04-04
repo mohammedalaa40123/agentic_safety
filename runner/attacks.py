@@ -72,6 +72,8 @@ def _build_pair_runner(cfg: RunConfig, attack_lm: Any, target_lm: Any, judge_lm:
                        sandbox_builder_fn: Callable[[], Tuple[Any, List[dict]]], spec: AttackSpec) -> AttackRunner:
     class PairConfig:
         n_iterations = spec.params.get("n_iterations", 5)
+    attack_max_n_tokens = cfg.models.attack_max_n_tokens
+    judge_max_n_tokens = cfg.models.judge_max_n_tokens
 
     loop = PairAttackLoop(
         config=PairConfig(),

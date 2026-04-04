@@ -136,21 +136,41 @@ class PairAttackLoop:
 
     def _extract_json(self, text: str) -> Dict[str, Any]:
         """Extracts JSON from text, handling potential Markdown formatting."""
+        if not text:
+            return {}
         try:
             return json.loads(text)
         except json.JSONDecodeError:
-            match = re.search(r'```json\n(.*?)\n```', text, re.DOTALL)
+            match = re.search(r'```json\s*(\{.*?\})\s*```', text, re.DOTALL | re.IGNORECASE)
             if match:
                 try:
                     return json.loads(match.group(1))
                 except json.JSONDecodeError:
                     pass
-            match = re.search(r'({.*})', text, re.DOTALL)
-            if match:
+
+            # Try decoding from the first JSON object start anywhere in the text.
+            decoder = json.JSONDecoder()
+            for idx, ch in enumerate(text):
+                if ch != '{':
+                    continue
                 try:
-                    return json.loads(match.group(1))
+                    obj, _ = decoder.raw_decode(text[idx:])
+                    if isinstance(obj, dict):
+                        return obj
                 except json.JSONDecodeError:
-                    pass
+                    continue
+
+            # Heuristic fallback for partially malformed outputs.
+            out: Dict[str, Any] = {}
+            score_match = re.search(r'"score"\s*:\s*(\d+)', text)
+            if score_match:
+                out["score"] = int(score_match.group(1))
+            reasoning_match = re.search(r'"reasoning"\s*:\s*"(.*?)"', text, re.DOTALL)
+            if reasoning_match:
+                out["reasoning"] = reasoning_match.group(1).replace('\\n', '\n').strip()
+            if out:
+                return out
+
             logger.warning(f"Failed to extract JSON from: {text[:100]}...")
             return {}
 
@@ -209,6 +229,8 @@ class PairAttackLoop:
         iteration_records: List[Dict[str, Any]] = []
 
         max_iterations = getattr(self.config, 'n_iterations', 5)
+        attack_max_tokens = getattr(self.config, 'attack_max_n_tokens', 256)
+        judge_max_tokens = getattr(self.config, 'judge_max_n_tokens', 64)
 
         for i in range(max_iterations):
             iteration = i + 1
@@ -222,7 +244,7 @@ class PairAttackLoop:
                         prompt = self.attack_lm.tokenizer.apply_chat_template(conversation_history, tokenize=False, add_generation_prompt=True)
                     except Exception:
                         pass
-                res = self.attack_lm.batched_generate([prompt], max_n_tokens=1024, temperature=0.7)
+                res = self.attack_lm.batched_generate([prompt], max_n_tokens=attack_max_tokens, temperature=0.7)
                 attack_response_text = res[0] if res else ""
             elif hasattr(self.attack_lm, "chat"):
                 res = self.attack_lm.chat([conversation_history])
@@ -267,7 +289,7 @@ class PairAttackLoop:
                         prompt = self.judge_lm.tokenizer.apply_chat_template(judge_history, tokenize=False, add_generation_prompt=True)
                     except Exception:
                         pass
-                res = self.judge_lm.batched_generate([prompt], max_n_tokens=512, temperature=0.0)
+                res = self.judge_lm.batched_generate([prompt], max_n_tokens=judge_max_tokens, temperature=0.0)
                 judge_response_text = res[0] if res else ""
             elif hasattr(self.judge_lm, "chat"):
                 res = self.judge_lm.chat([judge_history])
