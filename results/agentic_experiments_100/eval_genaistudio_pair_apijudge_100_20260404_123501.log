@@ -1,3 +1,0 @@
-12:35:01 [INFO] agentic_safety: Loaded 100 goals from data/agentic_scenarios_100.json
-12:35:01 [INFO] runner.models: Loading attack model: genai:llama3.1:latest
-12:35:01 [INFO] runner.models: Using GenAI Studio API model: llama3.1:latest

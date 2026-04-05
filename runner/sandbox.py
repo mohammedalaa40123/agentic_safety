@@ -43,7 +43,14 @@ def build_sandbox_components(cfg: SandboxConfig) -> Tuple[Any, List[Dict[str, An
         })
 
     if "code_exec" in enabled_tools:
-        tools.append(CodeExecTool(timeout=cfg.code_timeout))
+        tools.append(
+            CodeExecTool(
+                timeout=cfg.code_timeout,
+                sandbox_root=sandbox_root,
+                isolation_backend=cfg.code_exec_backend,
+                require_isolation=cfg.code_exec_require_isolation,
+            )
+        )
         hf_tools.append({
             "type": "function",
             "function": {

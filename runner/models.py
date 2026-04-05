@@ -24,9 +24,10 @@ MODEL_MAP = {
     "gemini-2.5-flash": "gemini-2.5-flash",
     "gemini-pro": "gemini-pro",
     "gpt-4o-mini": "gpt-4o-mini",
-    "genai": "genai:llama3.1:latest",
-    "genaistudio": "genai:llama3.1:latest",
+    "genai": "genai:llama3.3:70b",
+    "genaistudio": "genai:llama3.3:70b",
     "genai-llama3.1": "genai:llama3.1:latest",
+    "genai-llama3.3": "genai:llama3.3:70b",
 }
 
 

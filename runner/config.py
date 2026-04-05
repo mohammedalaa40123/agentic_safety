@@ -23,6 +23,8 @@ class SandboxConfig:
     sandbox_root: str = "/tmp/agentic_sandbox"
     tools: List[str] = field(default_factory=lambda: ["file_io", "code_exec", "web_browse", "network"])
     code_timeout: int = 10
+    code_exec_backend: str = "auto"
+    code_exec_require_isolation: bool = True
     web_timeout: int = 10
     net_sandbox: bool = True
     web_sandbox: bool = True
@@ -139,7 +141,17 @@ def load_config(path: str) -> RunConfig:
     legacy_sandbox = data.get("sandbox", {}) or {}
     if data.get("use_sandbox") and not legacy_sandbox.get("enabled", False):
         legacy_sandbox["enabled"] = True
-    for key in ["sandbox_root", "tools", "code_timeout", "web_timeout", "net_sandbox", "web_sandbox", "max_steps"]:
+    for key in [
+        "sandbox_root",
+        "tools",
+        "code_timeout",
+        "code_exec_backend",
+        "code_exec_require_isolation",
+        "web_timeout",
+        "net_sandbox",
+        "web_sandbox",
+        "max_steps",
+    ]:
         if key in data and key not in legacy_sandbox:
             legacy_sandbox[key] = data[key]
     if legacy_sandbox:
@@ -181,6 +193,8 @@ def load_config(path: str) -> RunConfig:
         sandbox_root=sandbox.get("sandbox_root", cfg.sandbox.sandbox_root),
         tools=sandbox.get("tools", cfg.sandbox.tools),
         code_timeout=sandbox.get("code_timeout", cfg.sandbox.code_timeout),
+        code_exec_backend=sandbox.get("code_exec_backend", cfg.sandbox.code_exec_backend),
+        code_exec_require_isolation=sandbox.get("code_exec_require_isolation", cfg.sandbox.code_exec_require_isolation),
         web_timeout=sandbox.get("web_timeout", cfg.sandbox.web_timeout),
         net_sandbox=sandbox.get("net_sandbox", cfg.sandbox.net_sandbox),
         web_sandbox=sandbox.get("web_sandbox", cfg.sandbox.web_sandbox),

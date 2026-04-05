@@ -1,0 +1,3 @@
+14:57:04 [INFO] agentic_safety: Loaded 1 goals from /tmp/agentic_one_goal.json
+14:57:04 [INFO] runner.models: Loading attack model: genai:llama3.1:latest
+14:57:04 [INFO] runner.models: Using GenAI Studio API model: llama3.1:latest

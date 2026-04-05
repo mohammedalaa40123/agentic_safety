@@ -1,3 +1,0 @@
-11:56:03 [INFO] agentic_safety: Loaded 100 goals from data/agentic_scenarios_100.json
-11:56:03 [INFO] runner.models: Loading attack model: gemini-2.5-flash
-11:56:03 [INFO] runner.models: Using GenAI Studio API model: gemini-2.5-flash

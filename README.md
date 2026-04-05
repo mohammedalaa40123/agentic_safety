@@ -26,6 +26,22 @@ pip install -e .
 - configs/: YAML presets (baseline, agentic, defense combos)
 - data/: goal lists (JSON/CSV)
 
+## Documentation (MkDocs)
+Comprehensive documentation is available under `docs/` and configured via `mkdocs.yml`.
+
+Build and preview locally:
+```bash
+pip install -r requirements-docs.txt
+mkdocs serve
+```
+
+Build static site:
+```bash
+mkdocs build --strict
+```
+
+GitHub Pages deployment is automated by `.github/workflows/docs.yml`.
+
 ## Config (YAML)
 See [runner/config.py](runner/config.py) for all fields. Key sections:
 - `experiment_name`: label for logs/results
@@ -34,6 +50,8 @@ See [runner/config.py](runner/config.py) for all fields. Key sections:
 - `goals_path`: JSON/CSV goals file
 - `models`: `attack_model`, `target_model`, `judge_model`, token limits, optional per-model rate limits (`attack_calls_per_minute`, `target_calls_per_minute`, `judge_calls_per_minute`)
 - `sandbox`: `enabled`, `tools` (file_io, code_exec, web_browse, network), timeouts, max_steps
+  - `code_exec_backend`: `auto` | `bwrap` | `none`
+  - `code_exec_require_isolation`: fail closed if no isolation backend is available
 - `attacks`: ordered list of attack specs `{name, enabled, stop_on_success, params}`; defaults to `pair`
 - `baseline`: `{enabled}` to prepend a direct/baseline run
 - `defenses`: `{enabled, active, jbshield, gradient_cuff, progent, stepshield}`
@@ -78,8 +96,10 @@ Flags:
 
 ## Tips
 - Sandbox: set `sandbox.enabled: true` and choose tools; tool calls in malicious goals mark jailbreak success.
+- Real command isolation: set `sandbox.code_exec_backend: bwrap` and `sandbox.code_exec_require_isolation: true` so code runs in a Linux namespace sandbox.
 - Defenses: configure `defenses.enabled: true` and list `active` defenses; prompt/response filters can block and mark defense responses.
-- Models: `runner/models.py` maps short names to HF IDs; adjust paths there if you host models elsewhere.
+- Models: `runner/models.py` maps short names to HF IDs and uses a project-local Hugging Face cache at `models/` by default (override with `AGENTIC_MODEL_CACHE_DIR`).
 - Purdue GenAI Studio API: use model names prefixed with `genai:` (for example `genai:llama3.1:latest`) and set `GENAI_STUDIO_API_KEY` (optional overrides: `GENAI_STUDIO_API_URL`, `GENAI_STUDIO_TIMEOUT_SEC`).
+- Dataset split examples: `data/agentic_scenarios_asr_eval_v2.json` (mixed), `data/agentic_scenarios_asr_eval_v2_safe.json` (safe-only), `data/agentic_scenarios_asr_eval_v2_unsafe.json` (unsafe-only).
 - Goals: JSON array of `{goal, target, category}` or CSV with `goal/prompt`, `target/target_str`, `category`.
 - Performance: lower `attacks[*].params.n_iterations` or sandbox `max_steps` to speed up; prefer smaller models for quick smoke runs.

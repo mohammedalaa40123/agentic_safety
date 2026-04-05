@@ -1,0 +1,70 @@
+site_name: Agentic Safety Evaluation Framework
+site_description: Comprehensive documentation for the agentic jailbreak evaluation framework
+site_url: https://example.github.io/agentic_safety/
+site_dir: site
+docs_dir: docs
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
+  - javascripts/mermaid.js
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Project Overview: getting-started/overview.md
+      - Quickstart: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
+  - Architecture:
+      - System Overview: architecture/system-overview.md
+      - Execution Flows: architecture/execution-flows.md
+      - Threat and Defense: architecture/threat-defense.md
+  - Components:
+      - run.py Entrypoint: components/run-entrypoint.md
+      - runner Package: components/runner-package.md
+      - attacks Package: components/attacks-package.md
+      - defenses Package: components/defenses-package.md
+      - tools Package: components/tools-package.md
+      - metrics Package: components/metrics-package.md
+      - configs and data: components/configs-data.md
+  - Operations:
+      - Running Experiments: operations/experiments.md
+      - Sandbox Isolation: operations/sandboxing.md
+      - Publishing to GitHub Pages: operations/github-pages.md
+  - Reference:
+      - Directory Map: reference/directory-map.md
+      - File Inventory: reference/file-inventory.md

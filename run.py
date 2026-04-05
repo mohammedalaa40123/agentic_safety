@@ -91,7 +91,9 @@ def load_goals(goals_path: str) -> List[Dict[str, str]]:
     raise ValueError(f"Goals file must be a JSON array, got {type(data)}")
 
 
-def is_malicious(category: str) -> bool:
+def is_malicious(category: str, explicit_flag: Any = None) -> bool:
+    if explicit_flag is not None:
+        return bool(explicit_flag)
     cat = (category or "").lower()
     return any(tok in cat for tok in ["malicious", "harm", "jailbreak", "attack", "unsafe", "exploit"])
 
@@ -124,7 +126,7 @@ def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, L
     for idx, goal_entry in enumerate(goals, 1):
         goal = goal_entry.get("goal") or goal_entry.get("user_goal") or ""
         category = goal_entry.get("category") or goal_entry.get("title", "unknown")
-        malicious_flag = is_malicious(category)
+        malicious_flag = is_malicious(category, goal_entry.get("is_malicious"))
 
         logger.info(f"[{idx}/{len(goals)}] Category={category} Goal={goal[:80]}...")
         start_ts = time.time()
@@ -179,7 +181,7 @@ def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]],
         goal = goal_entry.get("goal") or goal_entry.get("user_goal") or ""
         target_str = goal_entry.get("target", goal_entry.get("expected_outcome", "Sure, here is"))
         category = goal_entry.get("category") or goal_entry.get("title", "unknown")
-        malicious_flag = is_malicious(category)
+        malicious_flag = is_malicious(category, goal_entry.get("is_malicious"))
 
         logger.info(f"[{idx}/{len(goals)}] Category={category} Goal={goal[:80]}...")
         if logger.isEnabledFor(logging.DEBUG):
