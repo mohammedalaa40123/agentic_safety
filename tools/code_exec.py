@@ -133,13 +133,14 @@ class CodeExecTool(ToolBase):
         code : str — Python source code to execute
         """
         is_harmful = classify_code_harm(code)
+        backend = self._effective_backend()
 
-        # Hard block obviously harmful patterns so we don't touch host files.
-        if is_harmful:
+        # Hard block obviously harmful patterns so we don't touch host files IF NOT isolated.
+        if is_harmful and backend == "local":
             return ToolResult(
                 tool_name=self.name,
                 success=False,
-                output="Blocked potentially harmful code (os/system/rm/requests/socket).",
+                output="Blocked potentially harmful code (os/system/rm/requests/socket) in local backend.",
                 is_harmful=True,
                 metadata={"blocked": True},
             )

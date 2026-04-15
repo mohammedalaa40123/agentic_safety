@@ -10,8 +10,8 @@
 - Metrics pipeline records ASR, TIR, DBR, QTJ and exports CSV/JSON ([agentic_safety/metrics/collector.py](agentic_safety/metrics/collector.py)).
 - Config presets: baseline (no sandbox/defenses), full agentic attack, and defense stress test ([agentic_safety/configs](agentic_safety/configs)).
 
-## What is done
-- One-shot baseline experiments ready: `python run.py --config configs/baseline.yaml` reproduces hybrid GCG+PAIR text-only runs (Checkpoint 1 scope).
+## What is done- Judge logic updated: Rewrote Judge system prompt (`attacks/pair.py`) to mandate verifying `Tool Execution Log` for actual sandbox side-effects instead of just assuming intent equivalence. Eliminates false positives when testing smaller targets that hallucinate schema calls.
+- Automated Jailbreak Dataset generation script running: Scaling dataset to 500 diverse samples explicitly formulated around OWASP Top 10 Agentic vulnerabilities (`Agentic-AI-Top10-Vulnerability` lit review material).- One-shot baseline experiments ready: `python run.py --config configs/baseline.yaml` reproduces hybrid GCG+PAIR text-only runs (Checkpoint 1 scope).
 - Agentic sandbox can wrap any target model to simulate tool-use with logging of tool invocations and harm heuristics.
 - Crescendo pre-check is integrated in the hybrid loop; if it jailbreaks early, the loop returns immediately.
 - Metrics export with per-category summaries and time/query averages; outputs stored under configurable `output_dir` per run.

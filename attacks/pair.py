@@ -183,12 +183,23 @@ class PairAttackLoop:
                 if alt_score_match:
                     out["score"] = int(alt_score_match.group(1))
 
-            reasoning_match = re.search(r'"reasoning"\s*:\s*"((?:\\.|[^"\\])*)"', text, re.DOTALL)
+            reasoning_match = re.search(r'"reasoning"\s*:\s*"((?:\\"|[^"])*)"', text, re.DOTALL)
+            if not reasoning_match:
+                reasoning_match = re.search(r'"reasoning"\s*:\s*"(.*?)"\s*(?:,|})', text, re.DOTALL)
+            if not reasoning_match:
+                # Fallback for malformed outputs like: reasoning: some text (without quotes)
+                reasoning_match = re.search(
+                    r'\breasoning\b\s*[:=]\s*(.*?)(?:\n\s*\"?\w+\"?\s*:|\s*}\s*$|\s*$)',
+                    text,
+                    re.IGNORECASE | re.DOTALL,
+                )
+                
             if reasoning_match:
                 try:
                     out["reasoning"] = json.loads(f'"{reasoning_match.group(1)}"').strip()
                 except Exception:
-                    out["reasoning"] = reasoning_match.group(1).replace('\\n', '\n').strip()
+                    raw_reasoning = reasoning_match.group(1).replace('\\n', '\n').strip()
+                    out["reasoning"] = raw_reasoning.strip('"').rstrip(",}").strip()
             
             prompt_match = re.search(r'"prompt"\s*:\s*"((?:\\.|[^"\\])*)"\s*(?:,|})', text, re.DOTALL)
             if prompt_match:
@@ -237,7 +248,11 @@ class PairAttackLoop:
             
             tool_summary = ""
             if tool_log:
-                tool_summary = "\n[Tool Execution Log]:\n" + "\n".join([f"- Called {t['tool']} with {t.get('args', t.get('kwargs', {}))}" for t in tool_log])
+                lines = []
+                for t in tool_log:
+                    lines.append(f"- Called {t['tool']} with {t.get('args', t.get('kwargs', {}))}")
+                    lines.append(f"  -> Success: {t.get('success')} | Output: {str(t.get('output_preview', ''))[:150]}")
+                tool_summary = "\n[Tool Execution Log]:\n" + "\n".join(lines)
                 
             return (response or "No direct response.") + tool_summary, tool_log, stages
             
@@ -347,11 +362,23 @@ class PairAttackLoop:
 
             judge_data = self._extract_json(judge_response_text, source="judge")
             score = judge_data.get("score", 1)
-            reasoning = judge_data.get("reasoning", "No reasoning provided.")
+            if isinstance(score, str) and score.isdigit():
+                score = int(score)
+
+            reasoning = (
+                judge_data.get("reasoning")
+                or judge_data.get("Reasoning")
+                or judge_data.get("analysis")
+                or judge_data.get("explanation")
+                or "No reasoning provided."
+            )
 
             if "score" not in judge_data:
                 logger.warning("Judge JSON missing 'score'; defaulting to 1.")
                 logger.warning(f"Full judge raw response (missing score):\n{judge_response_text}")
+            if reasoning == "No reasoning provided.":
+                logger.warning("Judge JSON missing 'reasoning'; using fallback text.")
+                logger.warning(f"Full judge raw response (missing reasoning):\n{judge_response_text}")
 
             logger.info(f"Judge Score: {score}")
             logger.info(f"Judge Reasoning: {reasoning}")

@@ -40,7 +40,7 @@ class FileIOTool(ToolBase):
         is_harmful = classify_file_harm(path)
 
         # Resolve to sandbox
-        safe_path = os.path.normpath(os.path.join(self.sandbox_root, path))
+        safe_path = os.path.normpath(os.path.join(self.sandbox_root, path.lstrip('/')))
         if not safe_path.startswith(self.sandbox_root):
             return ToolResult(
                 tool_name=self.name,

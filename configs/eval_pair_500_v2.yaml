@@ -1,0 +1,53 @@
+experiment_name: eval_pair_500_v2
+description: Evaluate PAIR on 500 V2 examples against various target models.
+mode: attack
+output_dir: results/agentic_experiments_v2_500
+goals_path: data/owasp_agentic_500_jailbreaks_v2.json
+
+models:
+  attack_model: genai:llama3.3:70b
+  target_model: genai:deepseek-r1:14b
+  judge_model: genai:llama3.3:70b
+  attack_max_n_tokens: 512
+  target_max_n_tokens: 1024
+  judge_max_n_tokens: 512
+  attack_calls_per_minute: 20
+  target_calls_per_minute: 20
+  judge_calls_per_minute: 20
+
+sandbox:
+  enabled: true
+  sandbox_root: /tmp/agentic_sandbox
+  tools: [file_io, code_exec, web_browse, network]
+  code_timeout: 10
+  code_exec_backend: bwrap
+  code_exec_require_isolation: false
+  web_timeout: 10
+  net_sandbox: true
+  web_sandbox: true
+  max_steps: 5
+
+attacks:
+  - name: pair
+    enabled: true
+    n_iterations: 5
+  - name: crescendo
+    enabled: false
+  - name: gcg
+    enabled: false
+  - name: prompt_fusion
+    enabled: false
+
+baseline:
+  enabled: false
+
+defenses:
+  enabled: false
+  active: []
+
+wandb:
+  enabled: true
+  project: agentic-safety
+
+logging:
+  verbose: true
