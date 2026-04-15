@@ -43,6 +43,7 @@ class AttackSpec:
 class DefenseConfig:
     enabled: bool = False
     active: List[str] = field(default_factory=list)
+    agentshield: Dict[str, Any] = field(default_factory=dict)
     jbshield: Dict[str, Any] = field(default_factory=dict)
     gradient_cuff: Dict[str, Any] = field(default_factory=dict)
     progent: Dict[str, Any] = field(default_factory=dict)
@@ -208,6 +209,7 @@ def load_config(path: str) -> RunConfig:
     cfg.defenses = DefenseConfig(
         enabled=defenses.get("enabled", cfg.defenses.enabled),
         active=defenses.get("active", cfg.defenses.active),
+        agentshield=defenses.get("agentshield", cfg.defenses.agentshield),
         jbshield=defenses.get("jbshield", cfg.defenses.jbshield),
         gradient_cuff=defenses.get("gradient_cuff", cfg.defenses.gradient_cuff),
         progent=defenses.get("progent", cfg.defenses.progent),

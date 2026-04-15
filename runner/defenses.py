@@ -2,10 +2,6 @@ import logging
 from typing import Any, Callable, Optional
 
 from defenses.registry import DefenseRegistry
-from defenses.jbshield import JBShieldDefense
-from defenses.gradient_cuff import GradientCuffDefense
-from defenses.progent import ProgentDefense, PrivilegePolicy
-from defenses.stepshield import StepShieldDefense
 
 from .config import DefenseConfig
 
@@ -19,7 +15,26 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
 
     registry = DefenseRegistry()
 
+    if "agentshield" in cfg.active:
+        from defenses.agentshield import AgentShieldDefense, AgentShieldPolicy
+
+        ash_cfg = cfg.agentshield or {}
+        policy = AgentShieldPolicy(
+            model_id=ash_cfg.get("model_id", "protectai/deberta-v3-base-prompt-injection-v2"),
+            prompt_block_threshold=ash_cfg.get("prompt_block_threshold", 0.70),
+            tool_block_threshold=ash_cfg.get("tool_block_threshold", 0.65),
+            use_classifier=ash_cfg.get("use_classifier", True),
+            classifier_max_length=ash_cfg.get("classifier_max_length", 512),
+            blocked_tools=set(ash_cfg.get("blocked_tools", ["network"])),
+            strict_tools=set(ash_cfg.get("strict_tools", ["code_exec", "network"])),
+            allowed_domains=set(ash_cfg.get("allowed_domains", [])),
+            blocked_domains=set(ash_cfg.get("blocked_domains", [".onion", "pastebin.com", "exploit-db"])),
+        )
+        registry.add(AgentShieldDefense(policy=policy))
+
     if "jbshield" in cfg.active:
+        from defenses.jbshield import JBShieldDefense
+
         jbs_cfg = cfg.jbshield or {}
         registry.add(JBShieldDefense(
             n_mutations=jbs_cfg.get("n_mutations", 5),
@@ -28,6 +43,8 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
         ))
 
     if "gradient_cuff" in cfg.active:
+        from defenses.gradient_cuff import GradientCuffDefense
+
         gc_cfg = cfg.gradient_cuff or {}
         registry.add(GradientCuffDefense(
             model=target_model,
@@ -36,6 +53,8 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
         ))
 
     if "progent" in cfg.active:
+        from defenses.progent import ProgentDefense, PrivilegePolicy
+
         prog_cfg = cfg.progent or {}
         policy = PrivilegePolicy(
             allowed_tools=set(prog_cfg.get("allowed_tools", ["file_io", "web_browse"])),
@@ -49,6 +68,8 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
         registry.add(ProgentDefense(policy=policy))
 
     if "stepshield" in cfg.active:
+        from defenses.stepshield import StepShieldDefense
+
         ss_cfg = cfg.stepshield or {}
         registry.add(StepShieldDefense(
             harm_threshold=ss_cfg.get("harm_threshold", 0.7),

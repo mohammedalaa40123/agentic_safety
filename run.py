@@ -102,6 +102,26 @@ def _auto_success(is_malicious_flag: bool, tool_calls: List[dict]) -> bool:
     return bool(is_malicious_flag and tool_calls)
 
 
+def _is_error_text(text: str | None) -> bool:
+    t = (text or "").strip().lower()
+    if not t:
+        return False
+    return (
+        t.startswith("[genai studio error:")
+        or t.startswith("[gemini error:")
+        or t.startswith("[openai error:")
+        or t.startswith("[model error:")
+        or "the read operation timed out" in t
+        or "unexpected genai studio payload type" in t
+    )
+
+
+def _should_skip_outcome_due_to_error(outcome: AttackOutcome) -> bool:
+    # If the generated response is only an upstream/provider error payload,
+    # exclude this sample from metric aggregation.
+    return _is_error_text(getattr(outcome, "jailbreak_response", None))
+
+
 def _init_wandb(cfg: RunConfig):
     if not cfg.wandb.enabled:
         return None
@@ -116,13 +136,14 @@ def _init_wandb(cfg: RunConfig):
 
 
 def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, List[dict]],
-                     goals: List[Dict[str, str]], metrics: MetricsCollector) -> None:
+                     goals: List[Dict[str, str]], metrics: MetricsCollector, defense_registry: Any = None) -> int:
     sandbox, hf_tools = sandbox_tuple
     if not sandbox:
         logger.error("Sandbox is required for agentic mode; enable sandbox in config or CLI.")
-        return
+        return 0
 
     max_steps = cfg.sandbox.max_steps
+    skipped_due_to_errors = 0
     for idx, goal_entry in enumerate(goals, 1):
         goal = goal_entry.get("goal") or goal_entry.get("user_goal") or ""
         category = goal_entry.get("category") or goal_entry.get("title", "unknown")
@@ -131,7 +152,7 @@ def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, L
         logger.info(f"[{idx}/{len(goals)}] Category={category} Goal={goal[:80]}...")
         start_ts = time.time()
         response, tool_log, stages = run_agentic_loop(
-            target_lm, sandbox, hf_tools, goal, max_steps=max_steps
+            target_lm, sandbox, hf_tools, goal, max_steps=max_steps, defense_registry=defense_registry
         )
         duration = time.time() - start_ts
 
@@ -157,6 +178,11 @@ def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, L
             defense_response=None,
         )
 
+        if _should_skip_outcome_due_to_error(outcome):
+            skipped_due_to_errors += 1
+            logger.warning("  Skipping metrics: upstream model/provider error response.")
+            continue
+
         metrics.record(
             outcome,
             category=category,
@@ -173,10 +199,13 @@ def run_agentic_mode(cfg: RunConfig, target_lm: Any, sandbox_tuple: Tuple[Any, L
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(f"Agentic response: {response[:400]}")
 
+    return skipped_due_to_errors
+
 
 def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]], metrics: MetricsCollector,
-                    defense_registry: Any) -> None:
+                    defense_registry: Any) -> int:
     defense_name = ",".join(cfg.defenses.active) if (cfg.defenses.enabled and defense_registry) else ""
+    skipped_due_to_errors = 0
     for idx, goal_entry in enumerate(goals, 1):
         goal = goal_entry.get("goal") or goal_entry.get("user_goal") or ""
         target_str = goal_entry.get("target", goal_entry.get("expected_outcome", "Sure, here is"))
@@ -240,6 +269,11 @@ def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]],
                     outcome.defense_response = resp_result.reason
                     local_defense_name = resp_result.defense_name
 
+            if _should_skip_outcome_due_to_error(outcome):
+                skipped_due_to_errors += 1
+                logger.warning("  Skipping metrics: upstream model/provider error response.")
+                continue
+
             metrics.record(
                 outcome,
                 category=category,
@@ -261,6 +295,8 @@ def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]],
             if outcome.success and spec.stop_on_success:
                 logger.info("  stop_on_success triggered; moving to next goal")
                 break
+
+    return skipped_due_to_errors
 
 
 def main() -> None:
@@ -310,14 +346,32 @@ def main() -> None:
     wandb_run = _init_wandb(cfg)
     metrics = MetricsCollector(wandb_run=wandb_run)
 
+    skipped_due_to_errors = 0
     if cfg.mode == "agentic":
         sandbox_tuple = sandbox_builder()
-        run_agentic_mode(cfg, target_lm, sandbox_tuple, goals, metrics)
+        skipped_due_to_errors = run_agentic_mode(
+            cfg,
+            target_lm,
+            sandbox_tuple,
+            goals,
+            metrics,
+            defense_registry=defense_registry,
+        )
     else:
-        attack_runners = build_attack_runners(cfg, attack_lm, target_lm, judge_lm, sandbox_builder)
+        attack_runners = build_attack_runners(
+            cfg,
+            attack_lm,
+            target_lm,
+            judge_lm,
+            sandbox_builder,
+            defense_registry=defense_registry,
+        )
         if cfg.mode == "baseline":
             attack_runners = [r for r in attack_runners if r.name in {"baseline", "direct"}]
-        run_attack_mode(cfg, attack_runners, goals, metrics, defense_registry)
+        skipped_due_to_errors = run_attack_mode(cfg, attack_runners, goals, metrics, defense_registry)
+
+    if skipped_due_to_errors:
+        logger.warning(f"Skipped {skipped_due_to_errors} outcome(s) due to model/provider errors.")
 
     metrics.to_csv(csv_path)
     metrics.to_json(json_path)
@@ -333,9 +387,12 @@ def main() -> None:
     logger.info("=" * 60)
 
     print("\n" + "=" * 60)
-    metric_label = "Task Success" if cfg.mode == "agentic" else "ASR"
-    metric_val = summary['Task_Success'] if cfg.mode == "agentic" else summary['ASR']
-    print(f"FINAL — {metric_label}: {metric_val:.1%} | Experiments: {summary['total_experiments']} | Avg Queries: {summary['avg_queries']:.1f}")
+    if summary["total_experiments"] == 0:
+        print("FINAL — No valid experiments (all outcomes were skipped due to errors).")
+    else:
+        metric_label = "Task Success" if cfg.mode == "agentic" else "ASR"
+        metric_val = summary['Task_Success'] if cfg.mode == "agentic" else summary['ASR']
+        print(f"FINAL — {metric_label}: {metric_val:.1%} | Experiments: {summary['total_experiments']} | Avg Queries: {summary['avg_queries']:.1f}")
     print("=" * 60)
 
 

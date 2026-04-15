@@ -20,7 +20,7 @@ pip install -e .
 - [run.py](run.py): slim CLI orchestrator
 - runner/: config + logging + models + sandbox + attacks + defenses + agentic loop
 - attacks/: PAIR loop and other attack strategies
-- defenses/: JBShield, Gradient Cuff, Progent, StepShield, registry
+- defenses/: AgentShield, JBShield, Gradient Cuff, Progent, StepShield, registry
 - tools/: sandbox, file I/O, code exec, web browse, network simulators
 - metrics/: ASR/TIR/DBR/QTJ aggregation and exporters
 - configs/: YAML presets (baseline, agentic, defense combos)
@@ -54,7 +54,7 @@ See [runner/config.py](runner/config.py) for all fields. Key sections:
   - `code_exec_require_isolation`: fail closed if no isolation backend is available
 - `attacks`: ordered list of attack specs `{name, enabled, stop_on_success, params}`; defaults to `pair`
 - `baseline`: `{enabled}` to prepend a direct/baseline run
-- `defenses`: `{enabled, active, jbshield, gradient_cuff, progent, stepshield}`
+- `defenses`: `{enabled, active, agentshield, jbshield, gradient_cuff, progent, stepshield}`
 - `wandb`, `logging`: optional toggles
 
 ## CLI (overrides config)
@@ -98,6 +98,9 @@ Flags:
 - Sandbox: set `sandbox.enabled: true` and choose tools; tool calls in malicious goals mark jailbreak success.
 - Real command isolation: set `sandbox.code_exec_backend: bwrap` and `sandbox.code_exec_require_isolation: true` so code runs in a Linux namespace sandbox.
 - Defenses: configure `defenses.enabled: true` and list `active` defenses; prompt/response filters can block and mark defense responses.
+- AgentShield: enable `agentshield` in `defenses.active` to combine a prompt-injection classifier with tool-call risk blocking before execution.
+- AgentShield preset: `configs/eval_qwen_agentshield_pair.yaml` includes `agentshield + progent` defaults for PAIR resistance.
+- AgentShield calibration: `python scripts/calibrate_agentshield_threshold.py --data data/agentic_scenarios_asr_eval_v2.json` to tune prompt thresholds on your labeled data.
 - Models: `runner/models.py` maps short names to HF IDs and uses a project-local Hugging Face cache at `models/` by default (override with `AGENTIC_MODEL_CACHE_DIR`).
 - Purdue GenAI Studio API: use model names prefixed with `genai:` (for example `genai:llama3.1:latest`) and set `GENAI_STUDIO_API_KEY` (optional overrides: `GENAI_STUDIO_API_URL`, `GENAI_STUDIO_TIMEOUT_SEC`).
 - Dataset split examples: `data/agentic_scenarios_asr_eval_v2.json` (mixed), `data/agentic_scenarios_asr_eval_v2_safe.json` (safe-only), `data/agentic_scenarios_asr_eval_v2_unsafe.json` (unsafe-only).

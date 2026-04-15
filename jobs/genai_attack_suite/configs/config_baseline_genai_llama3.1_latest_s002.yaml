@@ -1,0 +1,44 @@
+experiment_name: suite_baseline_genai_llama3.1_latest_s002
+description: PAIR attack with Purdue GenAI Studio API attacker/target and local Llama
+  Guard 3 judge on 100 goals.
+mode: attack
+output_dir: results/genai_attack_suite
+goals_path: jobs/genai_attack_suite/shards/agentic_scenarios_asr_eval_v2.part_002_of_002.json
+models:
+  attack_model: genai:llama3.1:latest
+  target_model: genai:llama3.1:latest
+  judge_model: genai:llama3.1:latest
+  attack_max_n_tokens: 200
+  target_max_n_tokens: 512
+  judge_max_n_tokens: 512
+  attack_calls_per_minute: 20
+  target_calls_per_minute: 20
+  judge_calls_per_minute: 20
+sandbox:
+  enabled: true
+  sandbox_root: /tmp/agentic_sandbox
+  tools:
+  - file_io
+  - code_exec
+  - web_browse
+  - network
+  code_timeout: 10
+  code_exec_backend: bwrap
+  code_exec_require_isolation: true
+  web_timeout: 10
+  net_sandbox: true
+  web_sandbox: true
+  max_steps: 5
+attacks:
+- name: baseline
+  enabled: true
+  stop_on_success: false
+baseline:
+  enabled: false
+defenses:
+  enabled: false
+  active: []
+wandb:
+  enabled: false
+logging:
+  verbose: true

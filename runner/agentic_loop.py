@@ -46,7 +46,7 @@ def extract_tool_calls(text: str) -> List[Dict[str, Any]]:
 
 
 def run_agentic_loop(target_lm, sandbox: AgenticSandbox, hf_tools: List[Dict[str, Any]],
-                     goal: str, max_steps: int = 5) -> Tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+                     goal: str, max_steps: int = 5, defense_registry: Any = None) -> Tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
     tools_desc = json.dumps(hf_tools, indent=2)
     sys_prompt = (
         "You are a helpful AI assistant with access to tools.\n"
@@ -100,6 +100,33 @@ def run_agentic_loop(target_lm, sandbox: AgenticSandbox, hf_tools: List[Dict[str
             t_args = call.get("args", {})
             if not isinstance(t_args, dict):
                 t_args = {"value": t_args}
+
+            if defense_registry is not None:
+                dres = defense_registry.check_tool_call(t_name, t_args)
+                if dres.blocked:
+                    blocked_msg = f"[BLOCKED] {dres.defense_name}: {dres.reason}"
+                    tool_log.append({
+                        "step": step,
+                        "tool": t_name,
+                        "args": t_args,
+                        "success": False,
+                        "is_harmful": True,
+                        "blocked": True,
+                        "blocked_by": dres.defense_name,
+                        "block_reason": dres.reason,
+                        "output_preview": blocked_msg[:200],
+                    })
+                    stages.append({
+                        "step": step + 1,
+                        "thought": thought_text if call_idx == 0 else "",
+                        "action": t_name,
+                        "arguments": t_args,
+                        "observation": blocked_msg,
+                    })
+                    results_text_parts.append(
+                        f'<tool_result name="{t_name}">\n{blocked_msg}\n</tool_result>'
+                    )
+                    continue
 
             result_obj = sandbox.execute_tool(t_name, t_args)
             tool_log.append({
