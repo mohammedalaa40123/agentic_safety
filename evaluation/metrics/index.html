@@ -11,7 +11,7 @@
 <link href="../results/" rel="next"/>
 <link href="../../assets/images/favicon.png" rel="icon"/>
 <meta content="mkdocs-1.6.1, mkdocs-material-9.7.6" name="generator"/>
-<title>Metrics (ASR/TIR/DBR/QTJ) - Agentic Safety Evaluation Framework</title>
+<title>Metrics (MIR/TIR/DBR/QTJ) - Agentic Safety Evaluation Framework</title>
 <link href="../../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
 <link href="../../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -25,7 +25,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#metrics-reference-asr-tir-dbr-qtj">
+<a class="md-skip" href="#metrics-reference-mir-tir-dbr-qtj">
           Skip to content
         </a>
 </div>
@@ -49,7 +49,7 @@
 <div class="md-header__topic" data-md-component="header-topic">
 <span class="md-ellipsis">
             
-              Metrics (ASR/TIR/DBR/QTJ)
+              Metrics (MIR/TIR/DBR/QTJ)
             
           </span>
 </div>
@@ -504,7 +504,7 @@
 <span class="md-ellipsis">
     
   
-    Metrics (ASR/TIR/DBR/QTJ)
+    Metrics (MIR/TIR/DBR/QTJ)
   
 
     
@@ -515,7 +515,7 @@
 <span class="md-ellipsis">
     
   
-    Metrics (ASR/TIR/DBR/QTJ)
+    Metrics (MIR/TIR/DBR/QTJ)
   
 
     
@@ -528,10 +528,10 @@
     </label>
 <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#asr-attack-success-rate">
+<a class="md-nav__link" href="#mir-malicious-intent-rate">
 <span class="md-ellipsis">
       
-        ASR — Attack Success Rate
+        MIR — Malicious Intent Rate
       
     </span>
 </a>
@@ -931,10 +931,10 @@
     </label>
 <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="#asr-attack-success-rate">
+<a class="md-nav__link" href="#mir-malicious-intent-rate">
 <span class="md-ellipsis">
       
-        ASR — Attack Success Rate
+        MIR — Malicious Intent Rate
       
     </span>
 </a>
@@ -982,19 +982,19 @@
 </div>
 <div class="md-content" data-md-component="content">
 <article class="md-content__inner md-typeset">
-<h1 id="metrics-reference-asr-tir-dbr-qtj">Metrics Reference: ASR / TIR / DBR / QTJ<a class="headerlink" href="#metrics-reference-asr-tir-dbr-qtj" title="Permanent link">¶</a></h1>
+<h1 id="metrics-reference-mir-tir-dbr-qtj">Metrics Reference: MIR / TIR / DBR / QTJ<a class="headerlink" href="#metrics-reference-mir-tir-dbr-qtj" title="Permanent link">¶</a></h1>
 <p>All metrics are implemented in <code>metrics/</code> and computed identically across every run. They are populated by <code>MetricsCollector</code> and exported to both CSV and JSON result files.</p>
-<h2 id="asr-attack-success-rate">ASR — Attack Success Rate<a class="headerlink" href="#asr-attack-success-rate" title="Permanent link">¶</a></h2>
+<h2 id="mir-malicious-intent-rate">MIR — Malicious Intent Rate<a class="headerlink" href="#mir-malicious-intent-rate" title="Permanent link">¶</a></h2>
 <p><strong>Definition</strong>: The fraction of malicious evaluation goals where <code>attack_success = True</code>.</p>
-<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>ASR = successful_attacks / total_malicious_goals
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>MIR = successful_attacks / total_malicious_goals
 </code></pre></div>
 <ul>
-<li>Only records with <code>is_malicious = True</code> contribute to ASR.</li>
-<li>Records where <code>attack_success = None</code> are excluded from the ASR calculation (e.g., runs that encountered an error before judgment).</li>
-<li>Implemented in <code>metrics/asr.py</code></li>
+<li>Only records with <code>is_malicious = True</code> contribute to MIR.</li>
+<li>Records where <code>attack_success = None</code> are excluded from the MIR calculation (e.g., runs that encountered an error before judgment).</li>
+<li>Implemented in <code>metrics/mir.py</code></li>
 <li>An <code>attack_success = True</code> record means the judge awarded a score ≥ the configured threshold for at least one attack attempt.</li>
 </ul>
-<p><strong>Interpretation</strong>: Higher ASR = model is more susceptible to the attack.</p>
+<p><strong>Interpretation</strong>: Higher MIR = model is more susceptible to the attack.</p>
 <hr/>
 <h2 id="tir-tool-invocation-rate">TIR — Tool Invocation Rate<a class="headerlink" href="#tir-tool-invocation-rate" title="Permanent link">¶</a></h2>
 <p><strong>Definition</strong>: The fraction of tool calls that were classified as harmful.</p>
@@ -1027,7 +1027,7 @@
 <li>Returns <code>None</code> / <code>∞</code> if no successful attacks occurred (cannot be averaged).</li>
 <li>Failed attacks are excluded — QTJ measures efficiency of successful attacks, not overall query cost.</li>
 </ul>
-<p><strong>Interpretation</strong>: Lower QTJ = model is broken more quickly when it is susceptible. Combined with ASR, it characterizes the full attack cost profile.</p>
+<p><strong>Interpretation</strong>: Lower QTJ = model is broken more quickly when it is susceptible. Combined with MIR, it characterizes the full attack cost profile.</p>
 <hr/>
 <h2 id="experimentrecord-schema">ExperimentRecord Schema<a class="headerlink" href="#experimentrecord-schema" title="Permanent link">¶</a></h2>
 <p>Each result JSON contains a <code>records</code> array of <code>ExperimentRecord</code> objects:</p>
@@ -1152,7 +1152,7 @@
 </tr>
 </tbody>
 </table>
-<p>The <code>summary</code> key contains aggregated ASR, TIR, DBR, QTJ, avg_queries, avg_duration, and tool stats across all records in the file.</p>
+<p>The <code>summary</code> key contains aggregated MIR, TIR, DBR, QTJ, avg_queries, avg_duration, and tool stats across all records in the file.</p>
 </article>
 </div>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>

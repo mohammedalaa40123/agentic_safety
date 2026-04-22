@@ -503,7 +503,7 @@
 <span class="md-ellipsis">
     
   
-    Metrics (ASR/TIR/DBR/QTJ)
+    Metrics (MIR/TIR/DBR/QTJ)
   
 
     
@@ -995,8 +995,8 @@
 </code></pre></div>
 <p>Output:</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>docs/assets/charts/
-<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>├── asr_by_model.png
-<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>├── asr_by_category.png
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a>├── MIR_by_model.png
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a>├── MIR_by_category.png
 <a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>├── tool_quality.png
 <a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a>├── query_efficiency.png
 <a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>├── query_distribution.png
@@ -1019,14 +1019,14 @@
 <p>Result JSON files live in <code>results/agentic_experiments_v2_500/</code>. Each sub-folder corresponds to one experiment run and contains one JSON file with <code>summary</code>, <code>by_category</code>, and <code>records</code> keys.</p>
 <p>Older format files (plain list schema, no top-level <code>summary</code> key) are also handled by the pipeline.</p>
 <h2 id="verifying-metric-values">Verifying Metric Values<a class="headerlink" href="#verifying-metric-values" title="Permanent link">¶</a></h2>
-<p>To cross-check a specific model's ASR:</p>
+<p>To cross-check a specific model's MIR:</p>
 <div class="highlight"><pre><span></span><code><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"</span>
 <a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a><span class="s2">import json, glob</span>
 <a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a><span class="s2">from pathlib import Path</span>
 <a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a>
 <a href="#__codelineno-3-5" id="__codelineno-3-5" name="__codelineno-3-5"></a><span class="s2"># Load benchmark_data.json (normalised output)</span>
 <a href="#__codelineno-3-6" id="__codelineno-3-6" name="__codelineno-3-6"></a><span class="s2">data = json.loads(Path('docs/assets/charts/benchmark_data.json').read_text())</span>
-<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a><span class="s2">print('ASR by model:', data['asr_by_model'])</span>
+<a href="#__codelineno-3-7" id="__codelineno-3-7" name="__codelineno-3-7"></a><span class="s2">print('MIR by model:', data['MIR_by_model'])</span>
 <a href="#__codelineno-3-8" id="__codelineno-3-8" name="__codelineno-3-8"></a><span class="s2">print('Per-model N:', data['benchmark']['per_model_n'])</span>
 <a href="#__codelineno-3-9" id="__codelineno-3-9" name="__codelineno-3-9"></a><span class="s2">"</span>
 </code></pre></div>
