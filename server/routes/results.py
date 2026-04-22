@@ -10,13 +10,137 @@ import csv
 import json
 import os
 import re
+import shutil
+import threading
+import time
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 
 from server.config import RESULTS_DIR
 
+try:
+    from huggingface_hub import HfApi, hf_hub_download
+except ImportError:  # pragma: no cover
+    HfApi = None  # type: ignore[assignment]
+    hf_hub_download = None  # type: ignore[assignment]
+
 router = APIRouter(prefix="/results", tags=["results"])
+
+_SYNC_LOCK = threading.Lock()
+_LAST_SYNC_TS = 0.0
+_SYNC_RETRY_SEC = int(os.getenv("HF_RESULTS_SYNC_RETRY_SEC", "120"))
+_SYNC_DONE = False
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _results_dataset_repo() -> str:
+    # Defaults to your shared dataset so HF Space can show prior runs out of the box.
+    return os.getenv("HF_RESULTS_DATASET", "Mo-alaa/agentic-safety-results").strip()
+
+
+def _hf_token() -> Optional[str]:
+    token = os.getenv("HF_TOKEN", "").strip()
+    if token:
+        return token
+    token = os.getenv("HUGGING_FACE_HUB_TOKEN", "").strip()
+    return token or None
+
+
+def _download_all_results_from_hf(force: bool = False) -> Dict[str, Any]:
+    """Mirror all dataset files under ``results/`` into local ``RESULTS_DIR``.
+
+    This keeps the Results page populated on HF Space cold starts, where local
+    ephemeral storage may begin empty.
+    """
+    global _LAST_SYNC_TS, _SYNC_DONE
+
+    if not force and not _env_flag("HF_RESULTS_AUTO_SYNC", True):
+        return {"status": "skipped", "reason": "HF_RESULTS_AUTO_SYNC disabled"}
+
+    repo_id = _results_dataset_repo()
+    if not repo_id:
+        return {"status": "skipped", "reason": "HF_RESULTS_DATASET not set"}
+    if HfApi is None or hf_hub_download is None:
+        return {"status": "skipped", "reason": "huggingface_hub unavailable"}
+
+    now = time.time()
+    if not force and _SYNC_DONE:
+        return {"status": "ok", "repo": repo_id, "downloaded": 0, "updated": 0, "reused": 0, "failed": 0}
+    if not force and (now - _LAST_SYNC_TS) < _SYNC_RETRY_SEC:
+        return {"status": "skipped", "reason": "cooldown"}
+
+    with _SYNC_LOCK:
+        now = time.time()
+        if not force and _SYNC_DONE:
+            return {"status": "ok", "repo": repo_id, "downloaded": 0, "updated": 0, "reused": 0, "failed": 0}
+        if not force and (now - _LAST_SYNC_TS) < _SYNC_RETRY_SEC:
+            return {"status": "skipped", "reason": "cooldown"}
+        _LAST_SYNC_TS = now
+
+        token = _hf_token()
+        api = HfApi(token=token)
+
+        try:
+            repo_files = api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token)
+        except Exception as exc:
+            return {"status": "error", "repo": repo_id, "error": str(exc)}
+
+        result_files = [
+            p for p in repo_files
+            if p.startswith("results/") and (p.endswith(".json") or p.endswith(".csv"))
+        ]
+        result_files.sort()
+
+        downloaded = 0
+        updated = 0
+        reused = 0
+        failed = 0
+
+        os.makedirs(RESULTS_DIR, exist_ok=True)
+
+        for path_in_repo in result_files:
+            rel = path_in_repo[len("results/"):]
+            if not rel:
+                continue
+            target_path = os.path.join(RESULTS_DIR, rel)
+            os.makedirs(os.path.dirname(target_path), exist_ok=True)
+            try:
+                src_path = hf_hub_download(
+                    repo_id=repo_id,
+                    repo_type="dataset",
+                    filename=path_in_repo,
+                    token=token,
+                )
+                downloaded += 1
+                src_size = os.path.getsize(src_path)
+                if os.path.exists(target_path) and os.path.getsize(target_path) == src_size:
+                    reused += 1
+                    continue
+                shutil.copy2(src_path, target_path)
+                updated += 1
+            except Exception:
+                failed += 1
+
+        _SYNC_DONE = failed == 0
+        return {
+            "status": "ok" if failed == 0 else "partial",
+            "repo": repo_id,
+            "downloaded": downloaded,
+            "updated": updated,
+            "reused": reused,
+            "failed": failed,
+        }
+
+
+def _ensure_hf_results_mirrored() -> None:
+    _download_all_results_from_hf(force=False)
 
 def _try_parse_json_string(value: Any) -> Any:
     if not isinstance(value, str):
@@ -73,6 +197,7 @@ def _normalize_result_data(data: Any) -> Any:
 
 @router.get("")
 def list_results() -> List[Dict[str, Any]]:
+    _ensure_hf_results_mirrored()
     os.makedirs(RESULTS_DIR, exist_ok=True)
     out = []
     for root, _, files in os.walk(RESULTS_DIR):
@@ -117,6 +242,7 @@ def _extract_records(data: Any) -> List[Dict[str, Any]]:
 @router.get("/summary")
 def results_summary() -> List[Dict[str, Any]]:
     """Return lightweight per-file metadata (model, attack, defense, ASR, count) without full records."""
+    _ensure_hf_results_mirrored()
     os.makedirs(RESULTS_DIR, exist_ok=True)
     out: List[Dict[str, Any]] = []
     for root, _, files in os.walk(RESULTS_DIR):
@@ -160,6 +286,7 @@ def results_leaderboard() -> List[Dict[str, Any]]:
     Each row includes: ASR, Task_Success, TIR, DBR, QTJ, avg_duration, avg_queries,
     total_tool_calls, avg_correct_tool_calls, avg_wrong_tool_calls, plus model/attack/defense info.
     """
+    _ensure_hf_results_mirrored()
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
     # key → aggregated stats
@@ -266,6 +393,12 @@ def results_leaderboard() -> List[Dict[str, Any]]:
     # Sort: descending ASR
     rows.sort(key=lambda r: r["ASR"], reverse=True)
     return rows
+
+
+@router.post("/sync")
+def sync_results_from_hf() -> Dict[str, Any]:
+    """Force-refresh local results from HF dataset storage."""
+    return _download_all_results_from_hf(force=True)
 
 
 @router.delete("/{rel_path:path}")

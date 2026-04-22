@@ -1,34 +1,43 @@
 # Publishing to GitHub Pages
 
-## Included workflow
+This repository includes a GitHub Actions workflow at `.github/workflows/docs.yml` that builds and deploys the MkDocs site.
 
-A GitHub Actions workflow is provided at .github/workflows/docs.yml.
+## How the workflow works
 
-It will:
+On pushes to `main` or `master`, or on manual dispatch, the workflow:
 
-- Install documentation dependencies.
-- Build docs with mkdocs build --strict.
-- Upload the site artifact.
-- Deploy to GitHub Pages on main/master pushes.
+1. checks out the repository
+2. sets up Python 3.10
+3. installs docs requirements
+4. builds the MkDocs site with `mkdocs build --strict`
+5. uploads the generated `site/` artifact
+6. deploys the site via GitHub Pages
 
-## Repository settings
+## Local docs workflow
 
-In GitHub repository settings:
-
-1. Open Settings -> Pages.
-2. Set Source to GitHub Actions.
-3. Ensure the default branch is main or master.
-
-## Local verification
+Build the docs locally:
 
 ```bash
 pip install -r requirements-docs.txt
 mkdocs build --strict
+```
+
+Preview locally:
+
+```bash
 mkdocs serve
 ```
 
-## Updating documentation
+## Deploy locally to gh-pages
 
-- Edit docs/*.md pages.
-- Update nav in mkdocs.yml when adding pages.
-- Regenerate reference inventory pages when file layout changes.
+If you want to deploy from your machine instead of via Actions:
+
+```bash
+mkdocs gh-deploy --clean
+```
+
+## Notes
+
+- When adding new pages, update `mkdocs.yml` navigation.
+- `site_url` is configured to the repository GitHub Pages address.
+- If the site deployment fails, confirm that GitHub Pages settings are configured to use GitHub Actions.

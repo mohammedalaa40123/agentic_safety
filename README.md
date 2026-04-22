@@ -11,109 +11,242 @@ private: true
 
 # Agentic Safety Evaluation Framework
 
-A modular harness to run jailbreak attacks, baselines, and tool-augmented agent checks with optional defenses. The entrypoint is [run.py](run.py), backed by the small runner helpers in `runner/` (config, logging, models, attacks, defenses, sandbox, agentic loop).
+A modular evaluation harness for jailbreak attacks, agentic tool-use safety checks, and configurable defense benchmarking.
 
-## Prerequisites
+## Project links
+
+- Documentation site: https://mohammedalaa40123.github.io/agentic_safety/
+- Hugging Face Space: https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval
+- Results dataset: https://huggingface.co/datasets/Mo-alaa/agentic-safety-results
+- Repository: https://github.com/mohammedalaa40123/agentic_safety
+
+## Guide map
+
+- Setup and requirements: Requirements, Environment variables, Recommended setup and checklist
+- Running experiments: Quickstart CLI examples and Command reference
+- Validation: Testing
+- Deployment: Server backend and local deployment, Hugging Face Space deployment, Docs preview and GitHub Pages
+
+## What this repo provides
+
+- attack and baseline execution flows via `run.py`
+- agentic sandbox evaluation with tool calls and step limits
+- plug-and-play defense layers, including JBShield, Gradient Cuff, Progent, and StepShield
+- Hugging Face and API-hosted model support
+- FastAPI backend + deployed frontend support via Docker and Hugging Face Spaces
+- MkDocs documentation with GitHub Pages deployment automation
+
+## Requirements
+
 - Python 3.10+
-- GPU recommended for local Hugging Face models (PyTorch + transformers)
-- Optional: Gemini API key (`GEMINI_API_KEY` or `GOOGLE_API_KEY`) if you map models to Gemini
-- Optional: Weights & Biases if you wire it in (not enabled by default)
+- `pip`, `venv`
+- Optional GPU for local Hugging Face models
 
-Install locally:
+Install the package:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -U pip
+python -m pip install --upgrade pip
 pip install -e .
 ```
 
-## Project Layout
-- [run.py](run.py): slim CLI orchestrator
-- runner/: config + logging + models + sandbox + attacks + defenses + agentic loop
-- attacks/: PAIR loop and other attack strategies
-- defenses/: AgentShield, JBShield, Gradient Cuff, Progent, StepShield, registry
-- tools/: sandbox, file I/O, code exec, web browse, network simulators
-- metrics/: ASR/TIR/DBR/QTJ aggregation and exporters
-- configs/: YAML presets (baseline, agentic, defense combos)
-- data/: goal lists (JSON/CSV)
+Install server support:
 
-## Documentation (MkDocs)
-Comprehensive documentation is available under `docs/` and configured via `mkdocs.yml`.
+```bash
+pip install -e .[server]
+```
 
-Build and preview locally:
+Install docs dependencies:
+
 ```bash
 pip install -r requirements-docs.txt
+```
+
+## Environment variables
+
+Set provider keys as needed:
+
+- `OPENAI_API_KEY`
+- `GEMINI_API_KEY`
+- `GENAI_STUDIO_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `OLLAMA_CLOUD_API_KEY`
+- `WANDB_API_KEY`
+- `HF_TOKEN` for Hugging Face Space deployment
+- `AGENTIC_MODEL_CACHE_DIR` to override the model cache path
+
+## Recommended setup and checklist
+
+1. Clone the repo and enter its root folder.
+2. Create and activate a virtual environment.
+3. Install the package with `pip install -e .`.
+4. If using the server/back end, install `pip install -e .[server]`.
+5. Configure any provider API keys in your shell environment.
+6. Run a local experiment and verify output files are produced.
+7. Build or deploy docs with MkDocs.
+
+## Quickstart CLI examples
+
+Run a baseline evaluation:
+
+```bash
+python run.py --config configs/eval_qwen_baseline.yaml --verbose
+```
+
+Run an attack evaluation with sandboxing and defenses:
+
+```bash
+python run.py \
+  --config configs/eval_qwen_pair_attack.yaml \
+  --mode attack \
+  --goals data/agentic_scenarios_10_mixed.json \
+  --use-sandbox \
+  --use-defenses jbshield gradient_cuff \
+  --attack-plan pair crescendo baseline \
+  --output-dir results/demo \
+  --verbose
+```
+
+Run agentic mode with a sandbox:
+
+```bash
+python run.py --config configs/eval_qwen_pair_attack.yaml --mode agentic --use-sandbox --output-dir results/agentic-demo
+```
+
+Run a partial goals subset:
+
+```bash
+python run.py --config configs/baseline.yaml --goals data/agentic_scenarios_smoke5.json --goal-indices 0,2,5 --output-dir results/partial
+```
+
+## Command reference
+
+Key `run.py` flags:
+
+- `--config`: YAML config file path
+- `--output-dir`: output directory override
+- `--mode`: `attack`, `agentic`, or `baseline`
+- `--goals`: JSON or CSV goals file
+- `--attack-model`, `--target-model`, `--judge-model`: model overrides
+- `--use-sandbox`: enable sandbox tool execution
+- `--use-defenses`: list of defenses to turn on
+- `--attack-plan`: ordered attack sequence
+- `--baseline`: run baseline/direct mode
+- `--goal-indices`: comma-separated list of goal indices
+- `--verbose` / `-v`: enable debug logging
+
+## Configuration overview
+
+Configuration is loaded from YAML in `configs/` and parsed by `runner/config.py`.
+
+Important sections:
+
+- `experiment_name`
+- `description`
+- `mode`
+- `output_dir`
+- `goals_path`
+- `models`
+- `sandbox`
+- `attacks`
+- `defenses`
+- `wandb`
+- `logging`
+
+For a complete config reference, see `docs/getting-started/configuration.md`.
+
+## Testing
+
+Run the unit and integration test suite:
+
+```bash
+pytest -q tests/
+```
+
+Run a local CLI smoke test:
+
+```bash
+python run.py --config configs/eval_qwen_baseline.yaml --goals data/agentic_scenarios_smoke5.json --output-dir results/smoke --verbose
+```
+
+## Server backend and local deployment
+
+Start the FastAPI backend:
+
+```bash
+python -m uvicorn server.main:app --host 0.0.0.0 --port 7860
+```
+
+The backend serves the built frontend if `frontend/dist` exists.
+
+Build and run locally with Docker:
+
+```bash
+docker build -t agentic-safety .
+docker run --rm -p 7860:7860 agentic-safety
+```
+
+## Hugging Face Space deployment
+
+Deploy the repository to a private Hugging Face Docker Space:
+
+```bash
+export HF_TOKEN="<your_hf_token>"
+python scripts/deploy_hf_space.py --repo <username>/agentic-safety-eval --token "$HF_TOKEN"
+```
+
+Set the required Space secrets after deployment:
+
+- `GENAI_STUDIO_API_KEY`
+- `OPENAI_API_KEY`
+- `GEMINI_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `OLLAMA_CLOUD_API_KEY`
+- `WANDB_API_KEY`
+
+Optional but recommended for preloading Results in Space:
+
+- `HF_RESULTS_DATASET=Mo-alaa/agentic-safety-results`
+
+With this set, the backend automatically mirrors all files under `results/` from the dataset into local Space storage when `/api/results` endpoints are first accessed.
+
+The Dockerfile exposes port `7860` and the Space will build from that container definition.
+
+## Docs preview and GitHub Pages
+
+Preview docs locally:
+
+```bash
 mkdocs serve
 ```
 
-Build static site:
+Build static docs:
+
 ```bash
 mkdocs build --strict
 ```
 
-GitHub Pages deployment is automated by `.github/workflows/docs.yml`.
+Deploy docs to GitHub Pages:
 
-## Config (YAML)
-See [runner/config.py](runner/config.py) for all fields. Key sections:
-- `experiment_name`: label for logs/results
-- `mode`: `attack` (default), `agentic`, or `baseline`
-- `output_dir`: where CSV/JSON/logs are written
-- `goals_path`: JSON/CSV goals file
-- `models`: `attack_model`, `target_model`, `judge_model`, token limits, optional per-model rate limits (`attack_calls_per_minute`, `target_calls_per_minute`, `judge_calls_per_minute`)
-- `sandbox`: `enabled`, `tools` (file_io, code_exec, web_browse, network), timeouts, max_steps
-  - `code_exec_backend`: `auto` | `bwrap` | `none`
-  - `code_exec_require_isolation`: fail closed if no isolation backend is available
-- `attacks`: ordered list of attack specs `{name, enabled, stop_on_success, params}`; defaults to `pair`
-- `baseline`: `{enabled}` to prepend a direct/baseline run
-- `defenses`: `{enabled, active, agentshield, jbshield, gradient_cuff, progent, stepshield}`
-- `wandb`, `logging`: optional toggles
-
-## CLI (overrides config)
 ```bash
-python run.py \
-  --config configs/baseline.yaml \
-  --attack-model vicuna \
-  --target-model vicuna \
-  --judge-model llama-guard \
-  --goals data/agentic_scenarios_smoke5.json \
-  --use-sandbox \
-  --use-defenses jbshield gradient_cuff \
-  --attack-plan pair baseline \
-  --mode attack \
-  --output-dir results/demo \
-  --verbose
+mkdocs gh-deploy --clean
 ```
-Flags:
-- `--config` path to YAML
-- `--mode` attack | agentic | baseline
-- `--goals` JSON/CSV goals file
-- `--attack-model`, `--target-model`, `--judge-model` overrides
-- `--use-sandbox` enable sandbox/tool loop
-- `--use-defenses <list>` activate defenses
-- `--attack-plan <list>` ordered attacks (e.g., `pair crescendo baseline` — unknown names are skipped)
-- `--baseline` force baseline mode and prepend a baseline runner
-- `--output-dir` results directory
-- `-v/--verbose` debug logging
 
-## Modes
-- Attack: executes the ordered attack plan (PAIR by default), stop-on-success per attack entry.
-- Baseline: skips attack loops and just runs the baseline/direct runner (or any attack named `baseline`).
-- Agentic: sandbox-only execution using the target model; malicious tool calls count as immediate jailbreak success.
+The repository also contains an automated docs deployment workflow at `.github/workflows/docs.yml`.
 
-## Outputs
-- Results CSV/JSON in `output_dir` (timestamped filenames)
-- Log file in `output_dir` with run header (mode, models, defenses, attacks, paths)
-- Metrics include ASR/Task Success, TIR, DBR, QTJ, per-category breakdown in the JSON
+## Project layout
 
-## Tips
-- Sandbox: set `sandbox.enabled: true` and choose tools; tool calls in malicious goals mark jailbreak success.
-- Real command isolation: set `sandbox.code_exec_backend: bwrap` and `sandbox.code_exec_require_isolation: true` so code runs in a Linux namespace sandbox.
-- Defenses: configure `defenses.enabled: true` and list `active` defenses; prompt/response filters can block and mark defense responses.
-- AgentShield: enable `agentshield` in `defenses.active` to combine a prompt-injection classifier with tool-call risk blocking before execution.
-- AgentShield preset: `configs/eval_qwen_agentshield_pair.yaml` includes `agentshield + progent` defaults for PAIR resistance.
-- AgentShield calibration: `python scripts/calibrate_agentshield_threshold.py --data data/agentic_scenarios_asr_eval_v2.json` to tune prompt thresholds on your labeled data.
-- Models: `runner/models.py` maps short names to HF IDs and uses a project-local Hugging Face cache at `models/` by default (override with `AGENTIC_MODEL_CACHE_DIR`).
-- Purdue GenAI Studio API: use model names prefixed with `genai:` (for example `genai:llama3.1:latest`) and set `GENAI_STUDIO_API_KEY` (optional overrides: `GENAI_STUDIO_API_URL`, `GENAI_STUDIO_TIMEOUT_SEC`).
-- Dataset split examples: `data/agentic_scenarios_asr_eval_v2.json` (mixed), `data/agentic_scenarios_asr_eval_v2_safe.json` (safe-only), `data/agentic_scenarios_asr_eval_v2_unsafe.json` (unsafe-only).
-- Goals: JSON array of `{goal, target, category}` or CSV with `goal/prompt`, `target/target_str`, `category`.
-- Performance: lower `attacks[*].params.n_iterations` or sandbox `max_steps` to speed up; prefer smaller models for quick smoke runs.
+- `run.py`: CLI orchestrator
+- `runner/`: config, models, sandbox, attack and defense wiring
+- `attacks/`: attack algorithms and loops
+- `defenses/`: defense implementations
+- `tools/`: sandbox tool adapters
+- `metrics/`: metric aggregation and results export
+- `configs/`: YAML experiment presets
+- `data/`: evaluation scenarios and datasets
+- `server/`: FastAPI backend and job API
+- `frontend/`: web UI source and build output
+- `scripts/`: deployment and launcher helpers
+- `docs/`: MkDocs documentation
+- `.github/workflows/`: CI and docs automation

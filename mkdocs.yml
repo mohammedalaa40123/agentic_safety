@@ -1,6 +1,8 @@
 site_name: Agentic Safety Evaluation Framework
 site_description: Comprehensive documentation for the agentic jailbreak evaluation framework
-site_url: https://example.github.io/agentic_safety/
+site_url: https://mohammedalaa40123.github.io/agentic_safety/
+repo_url: https://github.com/mohammedalaa40123/agentic_safety
+repo_name: GitHub
 site_dir: site
 docs_dir: docs
 
@@ -8,9 +10,15 @@ theme:
   name: material
   language: en
   features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
     - content.code.copy
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -43,6 +51,9 @@ extra_javascript:
   - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
   - javascripts/mermaid.js
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
   - Getting Started:
@@ -65,6 +76,7 @@ nav:
       - Running Experiments: operations/experiments.md
       - Sandbox Isolation: operations/sandboxing.md
       - Publishing to GitHub Pages: operations/github-pages.md
+      - Deploy to Hugging Face Spaces: operations/hf-space-launch.md
   - Reference:
       - Directory Map: reference/directory-map.md
       - File Inventory: reference/file-inventory.md

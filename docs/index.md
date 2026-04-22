@@ -1,23 +1,34 @@
 # Agentic Safety Evaluation Framework
 
-This documentation covers the full repository structure and execution model for the agentic safety evaluation framework.
+Welcome to the Agentic Safety Evaluation Framework documentation.
 
-## What this project does
+## Project links
 
-- Runs attack-centric and agentic safety evaluations with configurable attack plans.
-- Supports local Hugging Face models and API-hosted models.
-- Executes tool calls through a sandbox and records tool-use behavior.
-- Applies optional defense layers on prompts, responses, and tool actions.
-- Exports experiment metrics for ASR, TIR, DBR, QTJ, and per-category summaries.
+- Documentation site: https://mohammedalaa40123.github.io/agentic_safety/
+- Hugging Face Space: https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval
+- Results dataset: https://huggingface.co/datasets/Mo-alaa/agentic-safety-results
+- Repository: https://github.com/mohammedalaa40123/agentic_safety
 
-## Documentation map
+This repository provides a repeatable evaluation platform for testing jailbreak attacks, agentic tool-use behavior, and defense effectiveness.
 
-- Getting Started: onboarding, quickstart, and config fields.
-- Architecture: end-to-end system and execution flow diagrams.
-- Components: file-level purpose for runner, attacks, defenses, tools, metrics, configs, and data.
-- Operations: reproducible experiment runs, sandbox isolation, docs publishing.
-- Reference: complete directory and file inventory.
+## What this documentation contains
 
-## Primary entrypoint
+- Getting Started: environment setup, package install, CLI workflow, and configuration reference.
+- Architecture: how the system is wired, how attack flows execute, and defense decision points.
+- Components: package-level responsibility for `run.py`, `runner/`, `attacks/`, `defenses/`, `tools/`, `metrics/`, `configs/`, and `data/`.
+- Operations: real experiment commands, sandbox settings, GitHub Pages docs deployment, and Hugging Face Space launch.
+- Reference: repository directory and file inventory for quick lookup.
 
-The main execution entrypoint is run.py, which orchestrates loading config, models, defenses, attacks, sandbox tools, and metrics collection.
+## Core entrypoints
+
+- `run.py`: local experiment orchestrator and CLI entrypoint.
+- `runner/config.py`: YAML loader and CLI override handler.
+- `server/main.py`: FastAPI app entrypoint for server-backed execution and API launch.
+- `scripts/deploy_hf_space.py`: deploy the repo as a Docker-based Hugging Face Space.
+
+## Start here
+
+1. Read `docs/getting-started/overview.md` for project goals and layout.
+2. Follow `docs/getting-started/quickstart.md` for a full setup walkthrough.
+3. Use `docs/getting-started/configuration.md` to customize experiments.
+4. Run `mkdocs serve` to preview docs locally.

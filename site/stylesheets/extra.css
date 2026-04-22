@@ -1,0 +1,40 @@
+/* Subtle readability and hierarchy improvements for docs pages */
+
+:root {
+  --as-border-soft: rgba(99, 102, 241, 0.18);
+  --as-bg-soft: rgba(99, 102, 241, 0.06);
+}
+
+.md-content h1 {
+  letter-spacing: 0.01em;
+}
+
+.md-content h2 {
+  border-top: 1px solid var(--as-border-soft);
+  padding-top: 0.8rem;
+  margin-top: 1.6rem;
+}
+
+.md-content p,
+.md-content li {
+  line-height: 1.72;
+}
+
+.md-typeset table:not([class]) {
+  border: 1px solid var(--as-border-soft);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.md-typeset table:not([class]) th {
+  background: var(--as-bg-soft);
+}
+
+.md-typeset code {
+  border-radius: 6px;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 10px;
+}
