@@ -13,6 +13,11 @@
       "DeepSeek-R1-14B",
       "DeepSeek-V3.2"
     ],
+    "extended_models": [
+      "Qwen3-1.7B",
+      "DeepSeek-R1-7B",
+      "Llama-3.1"
+    ],
     "total_records": 999,
     "per_model_n": {
       "DeepSeek-V3.2": 50,

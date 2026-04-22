@@ -47,6 +47,16 @@ CORE_MODELS: Dict[str, str] = {
     "DeepSeek-V3.2":   "deepseek-v3.2",
 }
 
+# Extended models — shown in category and scatter charts only for diversity
+# These are smaller / older models used to contrast the core 4
+EXTENDED_MODELS: Dict[str, str] = {
+    "Qwen3-1.7B":      "qwen3:1.7b",
+    "DeepSeek-R1-7B":  "deepseek-r1:7b",
+    "Llama-3.1":       "llama3.1:latest",
+}
+
+ALL_MODELS: Dict[str, str] = {**CORE_MODELS, **EXTENDED_MODELS}
+
 # Short labels for x-axis (no newlines — rotated 30° instead)
 # Keys must match the actual category strings present in result JSONs
 OWASP_LABEL_MAP = {
@@ -84,6 +94,10 @@ PALETTE = {
     "DeepSeek-R1-70B": "#D6604D",   # muted red
     "DeepSeek-R1-14B": "#1A9850",   # green
     "DeepSeek-V3.2":   "#F4A82E",   # amber
+    # Extended — muted/lighter variants
+    "Qwen3-1.7B":      "#762A83",   # purple
+    "DeepSeek-R1-7B":  "#018571",   # teal
+    "Llama-3.1":       "#B35806",   # brown-orange
 }
 
 # ---------------------------------------------------------------------------
@@ -120,10 +134,13 @@ def apply_theme() -> None:
 # Data loading helpers
 # ---------------------------------------------------------------------------
 
-def _model_key(target_model: str) -> Optional[str]:
-    """Map a raw target_model string to a display name, or None if not core."""
+def _model_key(target_model: str,
+               models: Optional[Dict[str, str]] = None) -> Optional[str]:
+    """Map a raw target_model string to a display name, or None if not in models."""
+    if models is None:
+        models = CORE_MODELS
     t = (target_model or "").lower()
-    for display, substr in CORE_MODELS.items():
+    for display, substr in models.items():
         if substr.lower() in t:
             return display
     return None
@@ -152,12 +169,16 @@ def _coerce_float(val: Any, default: float = 0.0) -> float:
         return default
 
 
-def load_records(results_dir: str) -> List[Dict[str, Any]]:
+def load_records(results_dir: str,
+                 models: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
     """
     Walk results_dir/**/*.json, parse every record, and return all that pass
     the strict PAIR benchmark filter (correct attack, judge in allowed set,
-    no defense, core model).
+    no defense, models in the given models dict).
     """
+    if models is None:
+        models = CORE_MODELS
+
     pattern = os.path.join(results_dir, "**", "*.json")
     json_files = sorted(glob.glob(pattern, recursive=True))
 
@@ -191,9 +212,9 @@ def load_records(results_dir: str) -> List[Dict[str, Any]]:
             if defense:
                 continue  # exclude defended runs
 
-            model_key = _model_key(target)
+            model_key = _model_key(target, models)
             if model_key is None:
-                continue  # not in core set
+                continue  # not in specified model set
 
             # Dedup: same model + goal pair keeps only first occurrence
             goal = rec.get("goal", "")
@@ -318,35 +339,60 @@ def chart_asr_by_model(data: Dict[str, float], out_path: str) -> None:
     print(f"  ✓ {out_path}")
 
 
-def chart_asr_by_owasp(data: Dict[str, Dict[str, float]], out_path: str) -> None:
-    # Use the canonical OWASP order; fill 0 for missing categories
+def chart_asr_by_owasp(data: Dict[str, Dict[str, float]],
+                       out_path: str,
+                       ext_data: Optional[Dict[str, Dict[str, float]]] = None) -> None:
+    """
+    Grouped bar chart: ASR per OWASP category.
+    Core models use solid bars; extended models use hatched bars.
+    ext_data: optional {category: {model: asr%}} for extended models.
+    """
     owasp_cats = OWASP_ORDER
 
-    models = list(CORE_MODELS.keys())
+    core_models = list(CORE_MODELS.keys())
+    ext_models  = list(EXTENDED_MODELS.keys()) if ext_data else []
+    all_disp    = core_models + ext_models
+
+    n_groups = len(all_disp)
+    total_width = 0.80          # total bar-group width per category tick
+    width = total_width / n_groups
+    offsets = np.linspace(-(n_groups - 1) / 2 * width,
+                          (n_groups - 1) / 2 * width,
+                          n_groups)
+
     x = np.arange(len(owasp_cats))
-    width = 0.20
-    offsets = np.linspace(-1.5 * width, 1.5 * width, len(models))
+    fig, ax = plt.subplots(figsize=(14, 5.5))
 
-    fig, ax = plt.subplots(figsize=(13, 5))
-
-    for model, offset in zip(models, offsets):
+    for model, offset in zip(core_models, offsets[:len(core_models)]):
         vals = [data.get(cat, {}).get(model, 0.0) for cat in owasp_cats]
-        bars = ax.bar(x + offset, vals, width, label=model,
-                      color=PALETTE.get(model, "#888"),
-                      edgecolor="white", linewidth=0.4, zorder=3)
+        ax.bar(x + offset, vals, width, label=model,
+               color=PALETTE.get(model, "#888"),
+               edgecolor="white", linewidth=0.4, zorder=3)
 
-    # Short readable labels rotated 30° — no newlines needed
+    if ext_data:
+        for model, offset in zip(ext_models, offsets[len(core_models):]):
+            vals = [ext_data.get(cat, {}).get(model, 0.0) for cat in owasp_cats]
+            ax.bar(x + offset, vals, width,
+                   label=f"{model} \u25a6",          # ▦ marker in legend
+                   color=PALETTE.get(model, "#aaa"),
+                   edgecolor="white", linewidth=0.4,
+                   hatch="///", alpha=0.75, zorder=3)
+
     labels = [OWASP_LABEL_MAP.get(cat, cat) for cat in owasp_cats]
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=9, rotation=30, ha="right", rotation_mode="anchor")
-    ax.set_ylim(0, 115)
+    ax.set_xticklabels(labels, fontsize=8.5, rotation=30,
+                       ha="right", rotation_mode="anchor")
+    ax.set_ylim(0, 120)
     ax.set_ylabel("Attack Success Rate (%)")
-    ax.set_title("ASR by OWASP Agentic AI Top-10 Category (PAIR, No Defense)")
+    title = "ASR by OWASP Agentic AI Top-10 Category (PAIR, No Defense)"
+    if ext_data:
+        title += "  [▦ = small/older models]"
+    ax.set_title(title, fontsize=12)
     ax.yaxis.grid(True, zorder=0, alpha=0.6)
     ax.set_axisbelow(True)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    ax.legend(loc="upper right", fontsize=9, frameon=True)
+    ax.legend(loc="upper right", fontsize=8.5, frameon=True, ncol=2)
 
     fig.tight_layout()
     fig.savefig(out_path, bbox_inches="tight", facecolor="white")
@@ -384,31 +430,93 @@ def chart_tool_quality(data: Dict[str, Dict[str, float]], out_path: str) -> None
     print(f"  ✓ {out_path}")
 
 
-def chart_query_efficiency(data: Dict[str, Dict[str, float]], out_path: str) -> None:
-    models = [m for m in CORE_MODELS if m in data]
-    avg_qs = [data[m]["avg_queries"] for m in models]
-    asrs   = [data[m]["asr"]         for m in models]
-    colors = [PALETTE.get(m, "#888") for m in models]
+def chart_query_efficiency(data: Dict[str, Dict[str, float]],
+                           out_path: str,
+                           ext_data: Optional[Dict[str, Dict[str, float]]] = None) -> None:
+    """
+    Scatter: avg QTJ vs ASR per model.
+    Core models: filled circles. Extended models: hollow diamonds.
+    Labels connected with arrows to avoid collision.
+    """
+    core_models = [m for m in CORE_MODELS if m in data]
+    ext_models  = [m for m in EXTENDED_MODELS if ext_data and m in ext_data] if ext_data else []
 
-    fig, ax = plt.subplots(figsize=(7, 5))
-    ax.scatter(avg_qs, asrs, c=colors, s=240, zorder=5,
-               edgecolors="#444444", linewidths=1.0)
+    all_models  = core_models + ext_models
+    all_x = [data[m]["avg_queries"] for m in core_models] + \
+            ([ext_data[m]["avg_queries"] for m in ext_models] if ext_data else [])
+    all_y = [data[m]["asr"] for m in core_models] + \
+            ([ext_data[m]["asr"] for m in ext_models] if ext_data else [])
+    all_c = [PALETTE.get(m, "#888") for m in all_models]
 
-    for m, xv, yv in zip(models, avg_qs, asrs):
-        ax.annotate(m, (xv, yv), textcoords="offset points",
-                    xytext=(8, 4), fontsize=9, color="#222222")
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Core: filled circles
+    cx = [data[m]["avg_queries"] for m in core_models]
+    cy = [data[m]["asr"]         for m in core_models]
+    cc = [PALETTE.get(m, "#888") for m in core_models]
+    ax.scatter(cx, cy, c=cc, s=260, zorder=5, edgecolors="#333333", linewidths=1.0,
+               marker="o", label="Core (4 model)")
+
+    # Extended: hollow diamonds
+    if ext_data and ext_models:
+        ex = [ext_data[m]["avg_queries"] for m in ext_models]
+        ey = [ext_data[m]["asr"]         for m in ext_models]
+        ec = [PALETTE.get(m, "#888") for m in ext_models]
+        for xv, yv, col in zip(ex, ey, ec):
+            # Outer ring diamond (colored edge, white fill)
+            ax.scatter(xv, yv, s=260, zorder=5,
+                       edgecolors=col, linewidths=2.0,
+                       marker="D", facecolors="white")
+            # Small inner fill dot so the color is visible
+            ax.scatter(xv, yv, s=70, zorder=6,
+                       edgecolors="none", facecolors=col, marker="D")
+
+    # ---- Arrow annotations with automatic repulsion ----
+    # Place text labels in a "ring" around the cluster
+    xs = np.array(all_x, dtype=float)
+    ys = np.array(all_y, dtype=float)
+
+    # Compute centre of mass of all points
+    cx_mean = float(np.mean(xs))
+    cy_mean = float(np.mean(ys))
+
+    # Text position = data point pushed outward from centre by a fixed amount
+    x_range = max(xs) - min(xs) if len(xs) > 1 else 1.0
+    y_range = max(ys) - min(ys) if len(ys) > 1 else 1.0
+    push_x = max(x_range * 0.80, 0.55)
+    push_y = max(y_range * 0.80, 12.0)
+
+    for m, xv, yv in zip(all_models, all_x, all_y):
+        dx = xv - cx_mean
+        dy = yv - cy_mean
+        norm = math.sqrt(dx**2 + dy**2) or 1.0
+        tx = xv + (dx / norm) * push_x
+        ty = yv + (dy / norm) * push_y
+        # Clamp text inside axes limits
+        tx = max(0.05, tx)
+        ty = max(5.0, min(108.0, ty))
+        ax.annotate(
+            m, xy=(xv, yv), xytext=(tx, ty),
+            fontsize=8.5, color="#222222",
+            arrowprops=dict(arrowstyle="->", color="#666666",
+                            lw=0.8, shrinkA=0, shrinkB=4),
+            ha="center", va="center",
+        )
 
     ax.set_xlabel("Avg Queries to Jailbreak (QTJ)")
     ax.set_ylabel("Attack Success Rate (%)")
-    ax.set_title("Query Efficiency vs ASR (PAIR Core, No Defense)")
+    ax.set_title("Query Efficiency vs ASR (PAIR, No Defense)")
     ax.set_xlim(left=0)
-    ax.set_ylim(0, 110)
-    ax.grid(True, alpha=0.5)
+    ax.set_ylim(0, 115)
+    ax.grid(True, alpha=0.4)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    patches = [mpatches.Patch(color=PALETTE[m], label=m) for m in models if m in PALETTE]
-    ax.legend(handles=patches, fontsize=9, loc="lower right", frameon=True)
+    # Legend: solid patch = core, hollow diamond = extended
+    patches = [mpatches.Patch(color=PALETTE[m], label=m)
+               for m in all_models if m in PALETTE]
+    ax.legend(handles=patches, fontsize=8.5, loc="lower right",
+              frameon=True, ncol=1 if len(patches) <= 4 else 2)
 
     fig.tight_layout()
     fig.savefig(out_path, bbox_inches="tight", facecolor="white")
@@ -469,12 +577,17 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"\n🔍  Loading records from: {args.results_dir}")
-    records = load_records(args.results_dir)
+    records = load_records(args.results_dir, models=CORE_MODELS)
     print(f"    Loaded {len(records)} benchmark records across {len(CORE_MODELS)} core models.")
 
     if not records:
         print("⚠️  No records matched the strict PAIR benchmark filter. Check results dir.")
         sys.exit(1)
+
+    # Also load extended models (for diversity charts)
+    ext_records = load_records(args.results_dir, models=EXTENDED_MODELS)
+    print(f"    Loaded {len(ext_records)} extended records "
+          f"({', '.join(EXTENDED_MODELS.keys())}).")
 
     model_counts = defaultdict(int)
     for r in records:
@@ -484,26 +597,31 @@ def main() -> None:
     # ---- Aggregations ----
     asr_model_data   = asr_by_model(records)
     asr_owasp_data   = asr_by_category(records)
+    ext_owasp_data   = asr_by_category(ext_records) if ext_records else None
     tool_data        = tool_quality(records)
     qeff_data        = query_efficiency(records)
+    ext_qeff_data    = query_efficiency(ext_records) if ext_records else None
 
     # ---- Charts ----
     print("\n📊  Generating charts ...")
     chart_asr_by_model(asr_model_data,            str(out_dir / "asr_by_model.png"))
-    chart_asr_by_owasp(asr_owasp_data,            str(out_dir / "asr_by_category.png"))
+    chart_asr_by_owasp(asr_owasp_data,            str(out_dir / "asr_by_category.png"),
+                       ext_data=ext_owasp_data)
     chart_tool_quality(tool_data,                 str(out_dir / "tool_quality.png"))
-    chart_query_efficiency(qeff_data,             str(out_dir / "query_efficiency.png"))
+    chart_query_efficiency(qeff_data,             str(out_dir / "query_efficiency.png"),
+                           ext_data=ext_qeff_data)
     chart_judge_score_distribution(records,       str(out_dir / "query_distribution.png"))
 
     # ---- Normalised data file ----
     benchmark_data = {
         "benchmark": {
-            "attack":       BENCHMARK_ATTACK,
-            "defense":      "none",
-            "judge_set":    sorted(BENCHMARK_JUDGES),
-            "core_models":  list(CORE_MODELS.keys()),
+            "attack":        BENCHMARK_ATTACK,
+            "defense":       "none",
+            "judge_set":     sorted(BENCHMARK_JUDGES),
+            "core_models":   list(CORE_MODELS.keys()),
+            "extended_models": list(EXTENDED_MODELS.keys()),
             "total_records": len(records),
-            "per_model_n":  dict(model_counts),
+            "per_model_n":   dict(model_counts),
         },
         "asr_by_model":     asr_model_data,
         "asr_by_category":  {
@@ -519,9 +637,13 @@ def main() -> None:
     print(f"  ✓ {data_path}")
 
     print("\n✅  Done. All assets written to:", out_dir)
-    print("\nPer-model ASR summary:")
+    print("\nPer-model ASR summary (core):")
     for m, asr in asr_model_data.items():
         print(f"  {m:20s}  {asr:.1f}%")
+    if ext_qeff_data:
+        print("\nExtended model query efficiency:")
+        for m, v in ext_qeff_data.items():
+            print(f"  {m:20s}  ASR={v['asr']:.1f}%  QTJ={v['avg_queries']:.2f}")
 
 
 if __name__ == "__main__":
