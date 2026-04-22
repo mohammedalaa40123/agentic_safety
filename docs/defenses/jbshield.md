@@ -1,5 +1,10 @@
 # JBShield
 
+!!! quote "Original Paper"
+    Zhang, X., He, Y., Dong, X., & Wang, X. (2024).
+    **JBShield: Defending Large Language Models from Jailbreak Attacks through Activated Concept Analysis and Manipulation.**
+    *arXiv:2412.12549*. [https://arxiv.org/abs/2412.12549](https://arxiv.org/abs/2412.12549)
+
 JBShield is a **prompt-layer defense** that detects jailbreak attempts by measuring divergence between the original and mutated versions of a candidate prompt.
 
 ## Mechanism

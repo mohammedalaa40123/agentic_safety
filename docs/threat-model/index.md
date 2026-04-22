@@ -1,6 +1,10 @@
 # Threat Model
 
-## Why Agentic Systems Need a Different Threat Model
+!!! quote "Key References"
+    - **OWASP Agentic AI Top-10** — OWASP Foundation (2024). [genai.owasp.org](https://genai.owasp.org/)
+    - **LLM Agents Safety Survey** — Gu, T. et al. (2024). *Agents Under Siege: Breaking and Fixing LLM-Based Multi-Agent Systems.*
+      *arXiv:2503.10434*. [arxiv.org/abs/2503.10434](https://arxiv.org/abs/2503.10434)
+    - **AgentDojo Benchmark** — Debenedetti, E. et al. (2024). *arXiv:2406.13352*. [arxiv.org/abs/2406.13352](https://arxiv.org/abs/2406.13352)
 
 Standard LLM safety red-teaming targets **single-turn refusal**. Agentic systems are fundamentally different:
 

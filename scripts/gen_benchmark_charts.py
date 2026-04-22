@@ -47,24 +47,40 @@ CORE_MODELS: Dict[str, str] = {
     "DeepSeek-V3.2":   "deepseek-v3.2",
 }
 
+# Short labels for x-axis (no newlines — rotated 30° instead)
 OWASP_LABEL_MAP = {
-    "AAI01-BrokenAccessControl":          "AAI-01\nBroken Access Control",
-    "AAI02-AgentImpersonation":           "AAI-02\nAgent Impersonation",
-    "AAI03-PromptInjection":              "AAI-03\nPrompt Injection",
-    "AAI04-OverlyPermissiveTool":         "AAI-04\nPermissive Tool Use",
-    "AAI05-MemoryPoisoning":              "AAI-05\nMemory Poisoning",
-    "AAI06-MultiAgentExploitation":       "AAI-06\nMulti-Agent Exploit",
-    "AAI07-DataExfiltration":             "AAI-07\nData Exfiltration",
-    "AAI08-ResourceAbuse":                "AAI-08\nResource Abuse",
-    "AAI09-SupplyChainAttack":            "AAI-09\nSupply Chain",
-    "AAI10-TrustBoundaryViolation":       "AAI-10\nTrust Violation",
+    "AAI01-BrokenAccessControl":     "AAI-01 Access Control",
+    "AAI02-AgentImpersonation":      "AAI-02 Impersonation",
+    "AAI03-PromptInjection":         "AAI-03 Prompt Injection",
+    "AAI04-OverlyPermissiveTool":    "AAI-04 Permissive Tool",
+    "AAI05-MemoryPoisoning":         "AAI-05 Memory Poison",
+    "AAI06-MultiAgentExploitation":  "AAI-06 Multi-Agent",
+    "AAI07-DataExfiltration":        "AAI-07 Exfiltration",
+    "AAI08-ResourceAbuse":           "AAI-08 Resource Abuse",
+    "AAI09-SupplyChainAttack":       "AAI-09 Supply Chain",
+    "AAI10-TrustBoundaryViolation":  "AAI-10 Trust Boundary",
 }
 
+# Canonical OWASP category order
+OWASP_ORDER = [
+    "AAI01-BrokenAccessControl",
+    "AAI02-AgentImpersonation",
+    "AAI03-PromptInjection",
+    "AAI04-OverlyPermissiveTool",
+    "AAI05-MemoryPoisoning",
+    "AAI06-MultiAgentExploitation",
+    "AAI07-DataExfiltration",
+    "AAI08-ResourceAbuse",
+    "AAI09-SupplyChainAttack",
+    "AAI10-TrustBoundaryViolation",
+]
+
+# Academic-safe palette: distinguishable on white bg, print-friendly
 PALETTE = {
-    "Llama-3.3-70B":   "#6C63FF",
-    "DeepSeek-R1-70B": "#FF6584",
-    "DeepSeek-R1-14B": "#43BCCD",
-    "DeepSeek-V3.2":   "#FFBE0B",
+    "Llama-3.3-70B":   "#2166AC",   # strong blue
+    "DeepSeek-R1-70B": "#D6604D",   # muted red
+    "DeepSeek-R1-14B": "#1A9850",   # green
+    "DeepSeek-V3.2":   "#F4A82E",   # amber
 }
 
 # ---------------------------------------------------------------------------
@@ -72,24 +88,28 @@ PALETTE = {
 # ---------------------------------------------------------------------------
 
 def apply_theme() -> None:
+    """White-background academic theme — suitable for papers and light-mode docs."""
     plt.rcParams.update({
-        "figure.facecolor":  "#0F1117",
-        "axes.facecolor":    "#161B22",
-        "axes.edgecolor":    "#30363D",
-        "axes.labelcolor":   "#C9D1D9",
-        "axes.titlecolor":   "#E6EDF3",
-        "xtick.color":       "#8B949E",
-        "ytick.color":       "#8B949E",
-        "text.color":        "#C9D1D9",
-        "grid.color":        "#21262D",
-        "grid.linewidth":    0.6,
-        "legend.facecolor":  "#161B22",
-        "legend.edgecolor":  "#30363D",
-        "font.family":       "sans-serif",
-        "font.size":         11,
-        "axes.titlesize":    13,
-        "axes.titleweight":  "bold",
-        "figure.dpi":        150,
+        "figure.facecolor":   "white",
+        "axes.facecolor":     "white",
+        "axes.edgecolor":     "#444444",
+        "axes.labelcolor":    "#222222",
+        "axes.titlecolor":    "#111111",
+        "xtick.color":        "#333333",
+        "ytick.color":        "#333333",
+        "text.color":         "#222222",
+        "grid.color":         "#CCCCCC",
+        "grid.linewidth":     0.6,
+        "legend.facecolor":   "white",
+        "legend.edgecolor":   "#AAAAAA",
+        "legend.framealpha":  0.9,
+        "font.family":        "sans-serif",
+        "font.size":          11,
+        "axes.titlesize":     13,
+        "axes.titleweight":   "bold",
+        "figure.dpi":         150,
+        "savefig.facecolor":  "white",
+        "savefig.edgecolor":  "white",
     })
 
 
@@ -270,37 +290,34 @@ def chart_asr_by_model(data: Dict[str, float], out_path: str) -> None:
     colors = [PALETTE.get(m, "#888") for m in models]
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    bars = ax.bar(models, values, color=colors, width=0.55, zorder=3)
+    bars = ax.bar(models, values, color=colors, width=0.55,
+                  edgecolor="white", linewidth=0.5, zorder=3)
     ax.set_ylim(0, 110)
     ax.set_ylabel("Attack Success Rate (%)")
-    ax.set_title("PAIR Attack Success Rate by Target Model")
-    ax.yaxis.grid(True, zorder=0)
+    ax.set_title("PAIR Attack Success Rate by Target Model (No Defense)")
+    ax.yaxis.grid(True, zorder=0, alpha=0.6)
     ax.set_axisbelow(True)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
     for bar, val in zip(bars, values):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + 2,
             f"{val:.0f}%",
-            ha="center", va="bottom", fontsize=11, color="#E6EDF3", fontweight="bold"
+            ha="center", va="bottom", fontsize=11, color="#222222", fontweight="bold"
         )
 
     ax.tick_params(axis="x", labelsize=10)
     fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out_path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  ✓ {out_path}")
 
 
 def chart_asr_by_owasp(data: Dict[str, Dict[str, float]], out_path: str) -> None:
-    # Identify the OWASP/AAI categories that exist in the data
-    owasp_cats = sorted(
-        {cat for cat in data if cat.startswith("AAI")},
-        key=lambda x: int(x.replace("AAI", "").split("-")[0]) if x.replace("AAI", "").split("-")[0].isdigit() else 99
-    )
-    if not owasp_cats:
-        # Fallback: use all categories (legacy label scheme)
-        owasp_cats = sorted(data.keys())[:10]
+    # Use the canonical OWASP order; fill 0 for missing categories
+    owasp_cats = OWASP_ORDER
 
     models = list(CORE_MODELS.keys())
     x = np.arange(len(owasp_cats))
@@ -309,25 +326,27 @@ def chart_asr_by_owasp(data: Dict[str, Dict[str, float]], out_path: str) -> None
 
     fig, ax = plt.subplots(figsize=(13, 5))
 
-    for i, (model, offset) in enumerate(zip(models, offsets)):
-        vals = [data[cat].get(model, 0.0) for cat in owasp_cats]
-        ax.bar(x + offset, vals, width, label=model, color=PALETTE.get(model, "#888"), zorder=3)
+    for model, offset in zip(models, offsets):
+        vals = [data.get(cat, {}).get(model, 0.0) for cat in owasp_cats]
+        bars = ax.bar(x + offset, vals, width, label=model,
+                      color=PALETTE.get(model, "#888"),
+                      edgecolor="white", linewidth=0.4, zorder=3)
 
-    labels = [
-        OWASP_LABEL_MAP.get(cat, cat.replace("AAI", "AAI-").replace("-", "\n", 1))
-        for cat in owasp_cats
-    ]
+    # Short readable labels rotated 30° — no newlines needed
+    labels = [OWASP_LABEL_MAP.get(cat, cat) for cat in owasp_cats]
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=8.5)
+    ax.set_xticklabels(labels, fontsize=9, rotation=30, ha="right", rotation_mode="anchor")
     ax.set_ylim(0, 115)
-    ax.set_ylabel("ASR (%)")
-    ax.set_title("ASR by OWASP AAI Top-10 Category")
-    ax.yaxis.grid(True, zorder=0)
+    ax.set_ylabel("Attack Success Rate (%)")
+    ax.set_title("ASR by OWASP Agentic AI Top-10 Category (PAIR, No Defense)")
+    ax.yaxis.grid(True, zorder=0, alpha=0.6)
     ax.set_axisbelow(True)
-    ax.legend(loc="upper right", fontsize=9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.legend(loc="upper right", fontsize=9, frameon=True)
 
     fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out_path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  ✓ {out_path}")
 
@@ -340,20 +359,24 @@ def chart_tool_quality(data: Dict[str, Dict[str, float]], out_path: str) -> None
     width = 0.35
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    ax.bar(x - width / 2, correct, width, label="Correct (%)", color="#43BCCD", zorder=3)
-    ax.bar(x + width / 2, wrong,   width, label="Wrong (%)",   color="#FF6584", zorder=3)
+    ax.bar(x - width / 2, correct, width, label="Correct (%)",
+           color="#1A9850", edgecolor="white", linewidth=0.4, zorder=3)
+    ax.bar(x + width / 2, wrong,   width, label="Wrong (%)",
+           color="#D6604D", edgecolor="white", linewidth=0.4, zorder=3)
 
     ax.set_xticks(x)
     ax.set_xticklabels(models, fontsize=10)
     ax.set_ylim(0, 110)
     ax.set_ylabel("% of Total Tool Calls")
     ax.set_title("Tool-Call Quality by Model (PAIR, No Defense)")
-    ax.yaxis.grid(True, zorder=0)
+    ax.yaxis.grid(True, zorder=0, alpha=0.6)
     ax.set_axisbelow(True)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
     ax.legend(fontsize=10)
 
     fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out_path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  ✓ {out_path}")
 
@@ -365,24 +388,27 @@ def chart_query_efficiency(data: Dict[str, Dict[str, float]], out_path: str) -> 
     colors = [PALETTE.get(m, "#888") for m in models]
 
     fig, ax = plt.subplots(figsize=(7, 5))
-    sc = ax.scatter(avg_qs, asrs, c=colors, s=220, zorder=5, edgecolors="#0F1117", linewidths=1.5)
+    ax.scatter(avg_qs, asrs, c=colors, s=240, zorder=5,
+               edgecolors="#444444", linewidths=1.0)
 
-    for m, x, y in zip(models, avg_qs, asrs):
-        ax.annotate(m, (x, y), textcoords="offset points", xytext=(8, 4), fontsize=9, color="#C9D1D9")
+    for m, xv, yv in zip(models, avg_qs, asrs):
+        ax.annotate(m, (xv, yv), textcoords="offset points",
+                    xytext=(8, 4), fontsize=9, color="#222222")
 
     ax.set_xlabel("Avg Queries to Jailbreak (QTJ)")
     ax.set_ylabel("Attack Success Rate (%)")
-    ax.set_title("Query Efficiency vs ASR (PAIR Core)")
+    ax.set_title("Query Efficiency vs ASR (PAIR Core, No Defense)")
     ax.set_xlim(left=0)
     ax.set_ylim(0, 110)
-    ax.grid(True)
+    ax.grid(True, alpha=0.5)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
-    # Legend patches
     patches = [mpatches.Patch(color=PALETTE[m], label=m) for m in models if m in PALETTE]
-    ax.legend(handles=patches, fontsize=9, loc="lower right")
+    ax.legend(handles=patches, fontsize=9, loc="lower right", frameon=True)
 
     fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out_path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  ✓ {out_path}")
 
@@ -400,16 +426,18 @@ def chart_judge_score_distribution(records: List[Dict], out_path: str) -> None:
             continue
         bins = range(1, max(qs) + 2)
         ax.hist(qs, bins=bins, align="left", color=PALETTE.get(model, "#888"),
-                edgecolor="#0F1117", zorder=3)
+                edgecolor="white", linewidth=0.5, zorder=3)
         ax.set_title(model, fontsize=10)
         ax.set_xlabel("Queries")
-        ax.yaxis.grid(True, zorder=0)
+        ax.yaxis.grid(True, zorder=0, alpha=0.6)
         ax.set_axisbelow(True)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
     axes[0].set_ylabel("Frequency")
     fig.suptitle("Query Count Distribution (PAIR, No Defense)", fontsize=12, y=1.02)
     fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight", facecolor=fig.get_facecolor())
+    fig.savefig(out_path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  ✓ {out_path}")
 

@@ -7,55 +7,47 @@ on:
       - docs/**
       - mkdocs.yml
       - requirements-docs.txt
-      - .github/workflows/docs.yml
-  pull_request:
-    branches: [main, master]
-    paths:
-      - docs/**
-      - mkdocs.yml
-      - requirements-docs.txt
+      - scripts/gen_benchmark_charts.py
       - .github/workflows/docs.yml
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write   # needed for mkdocs gh-deploy to push gh-pages branch
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history needed for gh-deploy
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Install docs dependencies
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
+          pip install matplotlib pandas numpy
 
-      - name: Build docs
-        run: mkdocs build --strict
+      - name: Regenerate benchmark charts
+        run: |
+          # Charts are committed to docs/assets/charts/ — only regenerate if
+          # results data is present (skips gracefully in CI without results/)
+          if [ -d "results/agentic_experiments_v2_500" ]; then
+            python scripts/gen_benchmark_charts.py \
+              --results-dir results/agentic_experiments_v2_500 \
+              --out-dir docs/assets/charts
+          else
+            echo "No results dir found — using committed chart assets."
+          fi
 
-      - name: Upload pages artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Build and deploy docs to gh-pages branch
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdocs gh-deploy --clean --force

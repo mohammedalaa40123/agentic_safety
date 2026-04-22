@@ -2067,6 +2067,15 @@
 
 
 <h1 id="defenses">Defenses<a class="headerlink" href="#defenses" title="Permanent link">&para;</a></h1>
+<div class="admonition quote">
+<p class="admonition-title">Key References</p>
+<ul>
+<li><strong>JBShield</strong> — Zhang et al. (2024). <em>arXiv:2412.12549</em>. <a href="https://arxiv.org/abs/2412.12549">arxiv.org/abs/2412.12549</a></li>
+<li><strong>Gradient Cuff</strong> — Hu et al. (2024). <em>arXiv:2403.00867</em>. <a href="https://arxiv.org/abs/2403.00867">arxiv.org/abs/2403.00867</a></li>
+<li><strong>Progent</strong> — Jia et al. (2025). <em>arXiv:2504.11703</em>. <a href="https://arxiv.org/abs/2504.11703">arxiv.org/abs/2504.11703</a></li>
+<li><strong>Llama Guard</strong> (StepShield-related) — Inan et al. (2023). <em>arXiv:2312.06674</em>. <a href="https://arxiv.org/abs/2312.06674">arxiv.org/abs/2312.06674</a></li>
+</ul>
+</div>
 <p>This framework provides four defense implementations that operate at different points in the agentic pipeline:</p>
 <h2 id="defense-layers">Defense Layers<a class="headerlink" href="#defense-layers" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Prompt → [JBShield / GradCuff] → Planner → Target LLM → [StepShield] → Tool Decision → [Progent]

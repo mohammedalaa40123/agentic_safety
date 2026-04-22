@@ -1,6 +1,13 @@
 # Defenses
 
+!!! quote "Key References"
+    - **JBShield** — Zhang et al. (2024). *arXiv:2412.12549*. [arxiv.org/abs/2412.12549](https://arxiv.org/abs/2412.12549)
+    - **Gradient Cuff** — Hu et al. (2024). *arXiv:2403.00867*. [arxiv.org/abs/2403.00867](https://arxiv.org/abs/2403.00867)
+    - **Progent** — Jia et al. (2025). *arXiv:2504.11703*. [arxiv.org/abs/2504.11703](https://arxiv.org/abs/2504.11703)
+    - **Llama Guard** (StepShield-related) — Inan et al. (2023). *arXiv:2312.06674*. [arxiv.org/abs/2312.06674](https://arxiv.org/abs/2312.06674)
+
 This framework provides four defense implementations that operate at different points in the agentic pipeline:
+
 
 ## Defense Layers
 

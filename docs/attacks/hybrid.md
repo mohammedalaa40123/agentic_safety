@@ -1,5 +1,12 @@
 # Hybrid Attack Orchestration
 
+!!! quote "Underlying Methods"
+    The hybrid loop combines:
+
+    - **PAIR** — Chao et al. (2023). *arXiv:2310.08419*. [arxiv.org/abs/2310.08419](https://arxiv.org/abs/2310.08419)
+    - **Crescendo** — Russinovich et al. (2024). *arXiv:2404.01833*. [arxiv.org/abs/2404.01833](https://arxiv.org/abs/2404.01833)
+    - **GCG** — Zou et al. (2023). *arXiv:2307.15043*. [arxiv.org/abs/2307.15043](https://arxiv.org/abs/2307.15043)
+
 The **Hybrid Loop** (`attacks/hybrid_loop.py`) orchestrates multiple attack strategies in sequence, escalating from fast-and-cheap to slow-and-powerful.
 
 ## Orchestration Order

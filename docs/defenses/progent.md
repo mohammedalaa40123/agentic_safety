@@ -1,5 +1,10 @@
 # Progent
 
+!!! quote "Original Paper"
+    Jia, Z., Shi, P., Pan, L., Gong, N. Z., & Lyu, C. (2025).
+    **Progent: Programmable Privilege Control for LLM Agents.**
+    *arXiv:2504.11703*. [https://arxiv.org/abs/2504.11703](https://arxiv.org/abs/2504.11703)
+
 Progent is a **tool-layer defense** that enforces privilege policy and access controls on tool invocations.
 
 ## Mechanism

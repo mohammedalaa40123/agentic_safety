@@ -1,5 +1,10 @@
 # Crescendo Attack
 
+!!! quote "Original Paper"
+    Russinovich, M., Salem, A., & Eldan, R. (2024).
+    **Great, Now Write an Essay About That: The Crescendo Multi-Turn LLM Jailbreak Attack.**
+    *arXiv:2404.01833*. [https://arxiv.org/abs/2404.01833](https://arxiv.org/abs/2404.01833)
+
 **Crescendo** is a multi-turn escalation attack that incrementally steers the target model from benign to harmful behavior across multiple conversation turns.
 
 ## How Crescendo Works

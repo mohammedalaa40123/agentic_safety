@@ -1,5 +1,10 @@
 # PAIR Attack
 
+!!! quote "Original Paper"
+    Chao, P., Robey, A., Dobriban, E., Hassani, H., Pappas, G. J., & Wong, E. (2023).
+    **Jailbreaking Black Box Large Language Models in Twenty Queries.**
+    *arXiv:2310.08419*. [https://arxiv.org/abs/2310.08419](https://arxiv.org/abs/2310.08419)
+
 **PAIR** (Prompt Automatic Iterative Refinement) uses one LLM as an automated attacker that iteratively refines jailbreak prompts against a target model, guided by a judge model that scores each attempt.
 
 ## How PAIR Works

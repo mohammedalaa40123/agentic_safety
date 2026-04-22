@@ -2147,6 +2147,22 @@
 
 
 <h1 id="stepshield">StepShield<a class="headerlink" href="#stepshield" title="Permanent link">&para;</a></h1>
+<div class="admonition quote">
+<p class="admonition-title">Related Work</p>
+<p>StepShield applies per-step response harmfulness scoring, conceptually related to:</p>
+<ul>
+<li>
+<p>Yuan, Z. et al. (2024).
+  <strong>ShieldLM: Empowering LLMs as Aligned, Customizable and Explainable Safety Detectors.</strong>
+  <em>arXiv:2402.16444</em>. <a href="https://arxiv.org/abs/2402.16444">https://arxiv.org/abs/2402.16444</a></p>
+</li>
+<li>
+<p>Inan, H. et al. (2023).
+  <strong>Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations.</strong>
+  <em>arXiv:2312.06674</em>. <a href="https://arxiv.org/abs/2312.06674">https://arxiv.org/abs/2312.06674</a></p>
+</li>
+</ul>
+</div>
 <p>StepShield is a <strong>response-layer defense</strong> that evaluates each model response against a harmfulness threshold before allowing it to proceed to tool dispatch.</p>
 <h2 id="mechanism">Mechanism<a class="headerlink" href="#mechanism" title="Permanent link">&para;</a></h2>
 <p>After the target model generates a response (but before any tool call is executed):</p>

@@ -1,5 +1,15 @@
 # Prompt Fusion Attack
 
+!!! quote "Related Work"
+    This strategy builds on prompt ensemble and candidate selection ideas from:
+
+    - Zou, A., Wang, Z., Kolter, J. Z., & Fredrikson, M. (2023).
+      **Universal and Transferable Adversarial Attacks on Aligned Language Models.**
+      *arXiv:2307.15043*. [https://arxiv.org/abs/2307.15043](https://arxiv.org/abs/2307.15043)
+
+    - Chao, P. et al. (2023). **Jailbreaking Black Box LLMs in Twenty Queries (PAIR).**
+      *arXiv:2310.08419*. [https://arxiv.org/abs/2310.08419](https://arxiv.org/abs/2310.08419)
+
 **Prompt Fusion** generates multiple jailbreak candidates and combines the most effective elements into a single composite prompt.
 
 ## How Prompt Fusion Works

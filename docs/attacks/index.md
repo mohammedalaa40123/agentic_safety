@@ -1,6 +1,13 @@
 # Attacks
 
+!!! quote "Key References"
+    - **PAIR** — Chao et al. (2023). *arXiv:2310.08419*. [arxiv.org/abs/2310.08419](https://arxiv.org/abs/2310.08419)
+    - **Crescendo** — Russinovich et al. (2024). *arXiv:2404.01833*. [arxiv.org/abs/2404.01833](https://arxiv.org/abs/2404.01833)
+    - **GCG** — Zou et al. (2023). *arXiv:2307.15043*. [arxiv.org/abs/2307.15043](https://arxiv.org/abs/2307.15043)
+    - **OWASP Agentic AI Top-10** — [genai.owasp.org](https://genai.owasp.org/)
+
 This framework implements four attack strategies, each targeting the agentic pipeline at different points and with different optimization assumptions.
+
 
 ## Attack Taxonomy
 

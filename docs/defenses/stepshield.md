@@ -1,5 +1,16 @@
 # StepShield
 
+!!! quote "Related Work"
+    StepShield applies per-step response harmfulness scoring, conceptually related to:
+
+    - Yuan, Z. et al. (2024).
+      **ShieldLM: Empowering LLMs as Aligned, Customizable and Explainable Safety Detectors.**
+      *arXiv:2402.16444*. [https://arxiv.org/abs/2402.16444](https://arxiv.org/abs/2402.16444)
+
+    - Inan, H. et al. (2023).
+      **Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations.**
+      *arXiv:2312.06674*. [https://arxiv.org/abs/2312.06674](https://arxiv.org/abs/2312.06674)
+
 StepShield is a **response-layer defense** that evaluates each model response against a harmfulness threshold before allowing it to proceed to tool dispatch.
 
 ## Mechanism

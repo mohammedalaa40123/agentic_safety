@@ -1,5 +1,10 @@
 # Gradient Cuff
 
+!!! quote "Original Paper"
+    Hu, X., Chen, P.-Y., & Ho, T.-Y. (2024).
+    **Gradient Cuff: Detecting Jailbreak Attacks on Large Language Models by Exploring Refusal Loss Landscapes.**
+    *arXiv:2403.00867*. [https://arxiv.org/abs/2403.00867](https://arxiv.org/abs/2403.00867)
+
 Gradient Cuff is a **prompt-layer defense** for locally-hosted differentiable models that detects adversarial prompts by monitoring gradient signal anomalies.
 
 ## Mechanism

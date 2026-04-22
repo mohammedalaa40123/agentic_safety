@@ -2014,17 +2014,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-agentic-systems-need-a-different-threat-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Agentic Systems Need a Different Threat Model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#threat-surface-map" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2078,7 +2067,15 @@
 
 
 <h1 id="threat-model">Threat Model<a class="headerlink" href="#threat-model" title="Permanent link">&para;</a></h1>
-<h2 id="why-agentic-systems-need-a-different-threat-model">Why Agentic Systems Need a Different Threat Model<a class="headerlink" href="#why-agentic-systems-need-a-different-threat-model" title="Permanent link">&para;</a></h2>
+<div class="admonition quote">
+<p class="admonition-title">Key References</p>
+<ul>
+<li><strong>OWASP Agentic AI Top-10</strong> — OWASP Foundation (2024). <a href="https://genai.owasp.org/">genai.owasp.org</a></li>
+<li><strong>LLM Agents Safety Survey</strong> — Gu, T. et al. (2024). <em>Agents Under Siege: Breaking and Fixing LLM-Based Multi-Agent Systems.</em>
+  <em>arXiv:2503.10434</em>. <a href="https://arxiv.org/abs/2503.10434">arxiv.org/abs/2503.10434</a></li>
+<li><strong>AgentDojo Benchmark</strong> — Debenedetti, E. et al. (2024). <em>arXiv:2406.13352</em>. <a href="https://arxiv.org/abs/2406.13352">arxiv.org/abs/2406.13352</a></li>
+</ul>
+</div>
 <p>Standard LLM safety red-teaming targets <strong>single-turn refusal</strong>. Agentic systems are fundamentally different:</p>
 <ul>
 <li><strong>Multi-step planning</strong>: An attack that fails in one turn can succeed across three or more carefully constructed turns.</li>
