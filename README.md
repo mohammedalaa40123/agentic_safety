@@ -1,14 +1,3 @@
----
-title: Agentic Safety Evaluator
-emoji: 🛡️
-colorFrom: indigo
-colorTo: purple
-sdk: docker
-app_port: 7860
-pinned: false
-private: true
----
-
 <div align="center">
 
 # 🛡️ Agentic Safety Evaluation Framework
@@ -17,8 +6,8 @@ private: true
 Evaluates PAIR, Crescendo, and Prompt-Fusion attacks across multi-step tool-use pipelines with pluggable defenses and structured metrics.
 
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-0969DA?style=flat-square&logo=github)](https://mohammedalaa40123.github.io/agentic_safety/)
-[![HF Space](https://img.shields.io/badge/🤗%20Space-Live%20Demo-orange?style=flat-square)](https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval)
-[![Dataset](https://img.shields.io/badge/🤗%20Dataset-Results-yellow?style=flat-square)](https://huggingface.co/datasets/Mo-alaa/agentic-safety-results)
+[![HF Space](https://img.shields.io/badge/🤗%20Space-Live%20Demo-FF9D00?style=flat-square)](https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval)
+[![Dataset](https://img.shields.io/badge/🤗%20Dataset-Results-FFD21E?style=flat-square)](https://huggingface.co/datasets/Mo-alaa/agentic-safety-results)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=flat-square&logo=github)](https://github.com/mohammedalaa40123/agentic_safety)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
@@ -41,45 +30,71 @@ This framework provides:
 
 ---
 
+## ▶ Try It: Hugging Face Space
+
+> **The easiest way to explore results, run new experiments, and view per-goal fingerprints.**
+
+**→ [https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval](https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval)**
+
+### Getting started in the Space
+
+| Step | What to do | Where |
+|------|-----------|-------|
+| **1. Set API keys** | Go to **Setup** tab → enter your provider API key(s) → click *Validate* | `/setup` |
+| **2. View results** | Go to **Leaderboard** tab to see ASR, QTJ, TIR across all models & attacks | `/leaderboard` |
+| **3. Inspect fingerprints** | In the **Results** tab, open any experiment → click *Fingerprint* to see per-goal success/fail breakdown | `/results` |
+| **4. Run new experiment** | Go to **Config** tab → pick model + attack → submit via **Jobs** | `/jobs` |
+
+> **Providers supported in the Space**: Google Genai Studio (`GENAI_STUDIO_API_KEY`), OpenAI (`OPENAI_API_KEY`), Gemini (`GEMINI_API_KEY`), Anthropic (`ANTHROPIC_API_KEY`), Ollama (local/cloud endpoint).
+
+---
+
 ## Mini-Benchmark Snapshot
 
-> **Scope**: Strict PAIR attack · No defenses · 4 core target models · Consistent judge (Llama-3.3-70B)  
-> **Data**: 999 deduplicated goal/model pairs from `agentic_experiments_v2_500`  
-> **Caveats**: PAIR-only (no Crescendo/Fusion comparison); judge-model bias risk present; no defense-at-scale matrix included.
+> **Scope**: PAIR attack · No defenses · Consistent judge (Llama-3.3-70B family)  
+> **Data**: `results/agentic_experiments_v2_500` — 18 model×attack combinations  
+> **Caveats**: Judge-model bias risk present; Crescendo/Fusion coverage is partial; no defense-at-scale matrix.
 
-### Attack Success Rate by Model
+### Attack Success Rate by Model (PAIR, core 4)
 
 ![ASR by Model](docs/assets/charts/asr_by_model.png)
 
-| Model | ASR (PAIR) | Avg QTJ | Notes |
-|-------|-----------|---------|-------|
-| Llama-3.3-70B | **83.7%** | ~3.0 | Most susceptible under PAIR |
-| DeepSeek-R1-70B | **83.2%** | ~3.0 | Strong reasoning; still highly susceptible |
-| DeepSeek-R1-14B | **75.4%** | ~2.6 | Fewer parameters, lower but significant ASR |
-| DeepSeek-V3.2 | **66.0%** | ~2.2 | Most resistant in core set |
+| Model | N | ASR | Avg QTJ | Notes |
+|-------|---|-----|---------|-------|
+| Llama-3.3-70B | 292 | **83.7%** | 2.4 | Most susceptible under PAIR |
+| DeepSeek-R1-70B | 292 | **83.2%** | 2.5 | Strong reasoning; still highly susceptible |
+| DeepSeek-R1-14B | 333 | **75.4%** | 2.9 | Lower but significant ASR |
+| DeepSeek-V3.2 | 50 | **66.0%** | 2.4 | Most resistant in core set |
+| DeepSeek-R1-7B | 292 | 73.1% | 2.9 | Small model, more queries needed |
+| Llama-3.1 | 292 | 71.0% | 3.1 | Older generation, moderate resistance |
+| Qwen3-1.7B | 292 | **57.2%** | 3.5 | Smallest model — lowest ASR, highest QTJ |
+| Qwen3-14B | 292 | 24.0% | — | Strong refusal capability |
+| Qwen3-30B | 292 | **0%** | — | Effectively resists PAIR under this judge |
 
-> **QTJ** = Queries-to-Jailbreak: lower means easier to break on average.
+> **QTJ** = Queries-to-Jailbreak (lower = easier). Qwen3-30B and Qwen3-14B show substantially different behaviour from the reasoning models.
 
 ### ASR by OWASP Agentic AI Top-10 Category
 
 ![ASR by OWASP Category](docs/assets/charts/asr_by_category.png)
 
-### Tool-Call Quality (Correct vs Wrong)
-
-![Tool Quality](docs/assets/charts/tool_quality.png)
+Hatched bars (▦) are small/older models shown for contrast. AAI-03 (Excessive Agency) consistently shows lowest ASR across all models.
 
 ### Query Efficiency vs ASR
 
 ![Query Efficiency](docs/assets/charts/query_efficiency.png)
 
-_Low QTJ + high ASR = efficient jailbreak. The scatter shows that DeepSeek-V3.2 requires fewer queries but also has meaningfully lower ASR, suggesting some implicit resistance._
+_Circles = core 4 benchmark models. Diamonds = extended set. Higher QTJ = more iterations needed to jailbreak. Qwen3-1.7B sits at the safe corner (low ASR, high QTJ)._
+
+### Tool-Call Quality (Correct vs Wrong)
+
+![Tool Quality](docs/assets/charts/tool_quality.png)
 
 ### Query Count Distribution
 
 ![Query Distribution](docs/assets/charts/query_distribution.png)
 
 **→ [Full benchmark methodology and metrics definitions](https://mohammedalaa40123.github.io/agentic_safety/evaluation/)**  
-**→ [Browse raw results on Hugging Face](https://huggingface.co/datasets/Mo-alaa/agentic-safety-results)**
+**→ [Browse raw results and fingerprints on the HF Space](https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval)**
 
 ---
 
@@ -123,8 +138,14 @@ python run.py \
   --output-dir results/demo \
   --verbose
 
-# 4. Regenerate benchmark charts
-python scripts/gen_benchmark_charts.py
+# 4. Upload results to HF Space (so they appear in the Leaderboard)
+export HF_TOKEN="hf_..."
+python scripts/upload_results_to_hf.py
+
+# 5. Regenerate benchmark charts locally
+python scripts/gen_benchmark_charts.py \
+  --results-dir results/agentic_experiments_v2_500 \
+  --out-dir docs/assets/charts
 ```
 
 → **[Full setup and configuration guide →](https://mohammedalaa40123.github.io/agentic_safety/getting-started/quickstart/)**
@@ -163,10 +184,17 @@ python scripts/gen_benchmark_charts.py \
   --out-dir docs/assets/charts
 ```
 
-Filter rules applied:
-- Attack = `pair` only
+To push your own results to the shared HF dataset (so they appear on the Space leaderboard):
+
+```bash
+export HF_TOKEN="hf_..."
+python scripts/upload_results_to_hf.py --dry-run   # preview first
+python scripts/upload_results_to_hf.py             # upload
+```
+
+Filter rules applied to the core benchmark charts:
+- Attack = `pair` only (core 4); all attacks shown in the Space leaderboard
 - No defense (`defense_name` is empty)
-- Core 4 target models only (see `scripts/gen_benchmark_charts.py: CORE_MODELS`)
 - First-occurrence deduplication per goal/model pair
 
 ---
@@ -198,8 +226,8 @@ agentic_safety/
 ├── configs/                  # YAML experiment presets
 ├── data/                     # Goal scenarios and datasets
 ├── server/                   # FastAPI backend + job API
-├── frontend/                 # Web UI source
-├── scripts/                  # gen_benchmark_charts.py, deploy helpers
+├── frontend/                 # Web UI source (React/TS)
+├── scripts/                  # gen_benchmark_charts.py, upload_results_to_hf.py
 ├── docs/                     # MkDocs documentation source
 │   └── assets/charts/        # Generated chart PNGs + benchmark_data.json
 └── results/                  # Experiment output (gitignored)
@@ -210,12 +238,12 @@ agentic_safety/
 ## Environment Variables
 
 | Variable | Purpose |
-|----------|---------|
+|----------|---------| 
 | `GENAI_STUDIO_API_KEY` | Google Genai Studio / RCAC |
 | `OPENAI_API_KEY` | OpenAI API |
 | `GEMINI_API_KEY` | Gemini API |
 | `ANTHROPIC_API_KEY` | Anthropic/Claude API |
 | `OLLAMA_CLOUD_API_KEY` | Ollama cloud endpoint |
 | `WANDB_API_KEY` | Weights & Biases logging |
-| `HF_TOKEN` | Hugging Face Space deployment |
+| `HF_TOKEN` | Hugging Face Space deployment & dataset upload |
 | `HF_RESULTS_DATASET` | Auto-mirror results from HF dataset on startup |
