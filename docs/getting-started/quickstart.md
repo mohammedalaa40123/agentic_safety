@@ -17,6 +17,7 @@ cd agentic_safety
 uv venv .venv
 source .venv/bin/activate
 uv pip install -e .
+uv sync
 ```
 
 Install server support if you plan to run the FastAPI backend:

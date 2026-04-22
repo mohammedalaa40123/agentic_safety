@@ -627,10 +627,15 @@ export default function Config() {
                 const hasOverrides = Object.keys(schema).some(
                   (k) => params[k] !== undefined && params[k] !== schema[k].default
                 )
+                const disabled = a === 'gcg' || a === 'hybrid'
                 return (
-                  <motion.button key={a} whileTap={{ scale: 0.92 }}
-                    onClick={() => store.set('attacks', on ? store.attacks.filter((x) => x !== a) : [...store.attacks, a])}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5"
+                  <motion.button key={a} whileTap={{ scale: disabled ? 1 : 0.92 }}
+                    title={disabled ? "Disabled for public Hugging Face UI" : undefined}
+                    onClick={() => {
+                        if (disabled) return;
+                        store.set('attacks', on ? store.attacks.filter((x) => x !== a) : [...store.attacks, a])
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={on
                       ? { background: c.bg, color: c.text, border: `1px solid ${c.text}40` }
                       : { background: 'rgba(30,41,59,0.5)', color: '#64748b', border: '1px solid rgba(99,102,241,0.08)' }}>

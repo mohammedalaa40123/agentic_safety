@@ -121,7 +121,7 @@ def _build_config(req: LaunchRequest, dataset_path: str) -> Dict[str, Any]:
     if req.attacks:
         cfg["attacks"] = req.attacks
     if req.defenses:
-        defense_cfg: Dict[str, Any] = {"active": req.defenses}
+        defense_cfg: Dict[str, Any] = {"enabled": True, "active": req.defenses}
         if req.defense_params:
             defense_cfg.update(req.defense_params)
         cfg["defenses"] = defense_cfg
