@@ -129,7 +129,7 @@ export default function Home() {
         className="text-center pt-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs mb-6"
           style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#a5b4fc' }}>
-          <Zap size={11} />ECE 570 · Purdue University · 2025
+          <Zap size={11} />ECE 570 · Purdue University · 2026
         </div>
         <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent leading-tight mb-4">
           Agentic Safety<br />Evaluation Platform

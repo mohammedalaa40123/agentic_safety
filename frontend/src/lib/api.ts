@@ -83,7 +83,7 @@ export interface LeaderRow {
   judge_model: string
   source_files: string[]
   total_experiments: number
-  ASR: number
+  MIR: number
   Task_Success: number
   TIR: number
   DBR: number

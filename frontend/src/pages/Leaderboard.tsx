@@ -28,7 +28,7 @@ function intFmt(v: unknown) {
   return typeof v === 'number' ? String(Math.round(v)) : '—'
 }
 
-const asrColor = (v: number) => {
+const mirColor = (v: number) => {
   if (v >= 0.7) return '#f87171'
   if (v >= 0.4) return '#fb923c'
   if (v >= 0.2) return '#facc15'
@@ -42,17 +42,17 @@ const taskColor = (v: number) => {
 
 const COLS: ColDef[] = [
   { key: 'total_experiments', label: 'N', title: 'Total experiments', fmt: intFmt, width: '52px' },
-  { key: 'ASR', label: 'ASR', title: 'Attack Success Rate', fmt: pctFmt, color: asrColor },
+  { key: 'MIR', label: 'MIR', title: 'Malicious Intent Rate', fmt: pctFmt, color: mirColor },
   { key: 'Task_Success', label: 'Task', title: 'Task Success Rate', fmt: pctFmt, color: taskColor },
   { key: 'TIR', label: 'TIR', title: 'Avg Tool Invocations per Run', fmt: numFmt },
-  { key: 'DBR', label: 'DBR', title: 'Defense Bypass Rate', fmt: pctFmt, color: asrColor },
+  { key: 'DBR', label: 'DBR', title: 'Defense Bypass Rate', fmt: pctFmt, color: mirColor },
   { key: 'QTJ', label: 'QTJ', title: 'Avg Queries to Jailbreak (successful attacks only)', fmt: numFmt },
   { key: 'avg_duration', label: 'Duration', title: 'Average run duration (s)', fmt: (v) => typeof v === 'number' ? `${v.toFixed(1)}s` : '—' },
   { key: 'avg_queries', label: 'Queries', title: 'Average LLM queries per run', fmt: numFmt },
   { key: 'total_tool_calls', label: 'Tools', title: 'Total tool calls across all runs', fmt: intFmt },
   { key: 'avg_correct_tool_calls', label: '✓ Tools', title: 'Avg correct tool calls per run', fmt: numFmt },
   { key: 'avg_wrong_tool_calls', label: '✗ Tools', title: 'Avg wrong tool calls per run', fmt: numFmt },
-  { key: 'avg_harmful_tool_calls', label: '☠ Tools', title: 'Avg harmful tool calls per run', fmt: numFmt, color: asrColor },
+  { key: 'avg_harmful_tool_calls', label: '☠ Tools', title: 'Avg harmful tool calls per run', fmt: numFmt, color: mirColor },
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -149,7 +149,7 @@ export default function Leaderboard() {
   const [rows, setRows] = useState<LeaderRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sortKey, setSortKey] = useState<keyof LeaderRow>('ASR')
+  const [sortKey, setSortKey] = useState<keyof LeaderRow>('MIR')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [filterModel, setFilterModel] = useState('')
   const [filterAttack, setFilterAttack] = useState('')
@@ -197,12 +197,12 @@ export default function Leaderboard() {
     const byModel = new Map<string, number[]>()
     filtered.forEach((r) => {
       if (!byModel.has(r.target_model)) byModel.set(r.target_model, [])
-      byModel.get(r.target_model)!.push(r.ASR)
+      byModel.get(r.target_model)!.push(r.MIR)
     })
-    let best = { model: '', asr: Infinity }
-    byModel.forEach((asrs, model) => {
-      const avg = asrs.reduce((s, v) => s + v, 0) / asrs.length
-      if (avg < best.asr) best = { model, asr: avg }
+    let best = { model: '', mir: Infinity }
+    byModel.forEach((mirs, model) => {
+      const avg = mirs.reduce((s, v) => s + v, 0) / mirs.length
+      if (avg < best.mir) best = { model, mir: avg }
     })
     return best
   }, [filtered])
@@ -211,12 +211,12 @@ export default function Leaderboard() {
     const byAtk = new Map<string, number[]>()
     filtered.forEach((r) => {
       if (!byAtk.has(r.attack_name)) byAtk.set(r.attack_name, [])
-      byAtk.get(r.attack_name)!.push(r.ASR)
+      byAtk.get(r.attack_name)!.push(r.MIR)
     })
-    let best = { attack: '', asr: -Infinity }
-    byAtk.forEach((asrs, atk) => {
-      const avg = asrs.reduce((s, v) => s + v, 0) / asrs.length
-      if (avg > best.asr) best = { attack: atk, asr: avg }
+    let best = { attack: '', mir: -Infinity }
+    byAtk.forEach((mirs, atk) => {
+      const avg = mirs.reduce((s, v) => s + v, 0) / mirs.length
+      if (avg > best.mir) best = { attack: atk, mir: avg }
     })
     return best
   }, [filtered])
@@ -269,8 +269,8 @@ export default function Leaderboard() {
       {filtered.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <SummaryCard icon={Trophy}      label="Most Robust Model"   value={most_robust.model || '—'} sub={`Avg ASR ${(most_robust.asr * 100).toFixed(1)}%`} color="#34d399" />
-          <SummaryCard icon={Swords}      label="Hardest Attack"      value={hardest_attack.attack || '—'} sub={`Avg ASR ${(hardest_attack.asr * 100).toFixed(1)}%`} color="#f87171" />
+          <SummaryCard icon={Trophy}      label="Most Robust Model"   value={most_robust.model || '—'} sub={`Avg MIR ${(most_robust.mir * 100).toFixed(1)}%`} color="#34d399" />
+          <SummaryCard icon={Swords}      label="Hardest Attack"      value={hardest_attack.attack || '—'} sub={`Avg MIR ${(hardest_attack.mir * 100).toFixed(1)}%`} color="#f87171" />
           <SummaryCard icon={Target}      label="Total Experiments"   value={String(filtered.reduce((s, r) => s + r.total_experiments, 0))} color="#818cf8" />
           <SummaryCard icon={Activity}    label="Highest TIR"         value={best_tir ? `${best_tir.TIR.toFixed(2)} tools/run` : '—'} sub={best_tir?.target_model} color="#fb923c" />
         </motion.div>

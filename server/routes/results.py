@@ -1,7 +1,7 @@
 """Results file browser routes.
 
 GET /api/results              → list all result files across results/
-GET /api/results/summary      → lightweight summary per file (model, attack, ASR, count)
+GET /api/results/summary      → lightweight summary per file (model, attack, MIR, count)
 GET /api/results/{rel_path}   → get a specific result JSON or CSV file
 """
 from __future__ import annotations
@@ -241,7 +241,7 @@ def _extract_records(data: Any) -> List[Dict[str, Any]]:
 
 @router.get("/summary")
 def results_summary() -> List[Dict[str, Any]]:
-    """Return lightweight per-file metadata (model, attack, defense, ASR, count) without full records."""
+    """Return lightweight per-file metadata (model, attack, defense, MIR, count) without full records."""
     _ensure_hf_results_mirrored()
     os.makedirs(RESULTS_DIR, exist_ok=True)
     out: List[Dict[str, Any]] = []
@@ -283,7 +283,7 @@ def results_summary() -> List[Dict[str, Any]]:
 def results_leaderboard() -> List[Dict[str, Any]]:
     """Aggregate all result files into per-(target_model, attack, defense) leaderboard rows.
 
-    Each row includes: ASR, Task_Success, TIR, DBR, QTJ, avg_duration, avg_queries,
+    Each row includes: MIR, Task_Success, TIR, DBR, QTJ, avg_duration, avg_queries,
     total_tool_calls, avg_correct_tool_calls, avg_wrong_tool_calls, plus model/attack/defense info.
     """
     _ensure_hf_results_mirrored()
@@ -374,7 +374,7 @@ def results_leaderboard() -> List[Dict[str, Any]]:
             **{k: v for k, v in grp.items() if k != "files"},
             "source_files": grp["files"],
             "total_experiments": n,
-            "ASR":        round(n_attacked / n, 4) if n else 0.0,
+            "MIR":        round(n_attacked / n, 4) if n else 0.0,
             "Task_Success": round(n_task_ok / n, 4) if n else 0.0,
             "TIR":        round(total_tool_calls / n, 4) if n else 0.0,
             "DBR":        round(n_def_bypass / n_malicious_with_defense, 4)
@@ -390,8 +390,8 @@ def results_leaderboard() -> List[Dict[str, Any]]:
         }
         rows.append(row)
 
-    # Sort: descending ASR
-    rows.sort(key=lambda r: r["ASR"], reverse=True)
+    # Sort: descending MIR
+    rows.sort(key=lambda r: r["MIR"], reverse=True)
     return rows
 
 

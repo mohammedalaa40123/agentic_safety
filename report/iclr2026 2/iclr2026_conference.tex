@@ -48,14 +48,14 @@ Crescendo~\citep{russinovich2024crescendo} (multi-turn escalation)---against
 nine target models executed inside a sandboxed tool-use pipeline with
 \texttt{file\_io}, \texttt{network}, \texttt{code\_exec}, and
 \texttt{web\_browse} capabilities.  This study evaluates \textbf{3,462 attack trials}
-spanning nine models and three attack methods, measuring Attack Success Rate
-(ASR), Queries-to-Jailbreak (QTJ), Tool Invocation Rate (TIR), and
+spanning nine models and three attack methods, measuring Malicious Intent Rate
+(MIR), Queries-to-Jailbreak (QTJ), Tool Invocation Rate (TIR), and
 per-category vulnerability distributions mapped to the OWASP Agentic AI
 Top-10 taxonomy~\citep{owasp2025}.  Key findings include: (1)~reasoning-optimised
-models (DeepSeek-R1-70B, 87.0\% ASR) are \emph{more} susceptible to PAIR than
-instruction-tuned counterparts; (2)~Crescendo achieves 100\% ASR on Llama-3.3-70B
+models (DeepSeek-R1-70B, 87.0\% MIR) are \emph{more} susceptible to PAIR than
+instruction-tuned counterparts; (2)~Crescendo achieves 100\% MIR on Llama-3.3-70B
 versus 84.2\% for PAIR, underscoring the danger of multi-turn escalation; and
-(3)~Qwen3-30B effectively resists all PAIR attacks (0\% ASR), demonstrating
+(3)~Qwen3-30B effectively resists all PAIR attacks (0\% MIR), demonstrating
 that safety alignment can remain robust under iterative adversarial pressure.
 The framework, datasets, interactive leaderboard, and all experimental result
 artifacts are publicly available, and the project is continuously open for community contributions.
@@ -101,7 +101,7 @@ execution}. The core contributions of this work are fourfold:
 \end{enumerate}
 
 Across 9~target models, 3~attack methods, and 3,462~total trials, this framework finds
-substantial variation in model vulnerability, with ASR ranging from 0\%
+substantial variation in model vulnerability, with MIR ranging from 0\%
 (Qwen3-30B under PAIR) to 100\% (Llama-3.3-70B under Crescendo).  These
 results underscore the need for attack-specific \emph{and}
 model-architecture-specific safety evaluation in the agentic regime.
@@ -112,7 +112,7 @@ model-architecture-specific safety evaluation in the agentic regime.
 
 \subsection{Jailbreak attacks on LLMs.}
 Gradient-based attacks such as GCG~\citep{zou2023gcg} optimise adversarial
-token suffixes via white-box gradient descent, achieving high transfer ASR but
+token suffixes via white-box gradient descent, achieving high transfer MIR but
 requiring access to model parameters.  Black-box alternatives include
 PAIR~\citep{chao2023pair}, which uses an attacker LLM to iteratively refine
 prompts guided by a judge LLM, and Crescendo~\citep{russinovich2024crescendo},
@@ -218,7 +218,7 @@ This approach extracts five complementary metrics, providing a heavily structure
 \toprule
 \textbf{Metric} & \textbf{Description} \\
 \midrule
-\textbf{ASR} & \textbf{Attack Success Rate:} The fraction of malicious goals where the judge scores $\geq \tau$. Evaluates the probability of compromising core alignment. \\
+\textbf{MIR} & \textbf{Malicious Intent Rate:} The fraction of malicious goals where the judge scores $\geq \tau$. Evaluates the probability of compromising core alignment. \\
 \textbf{QTJ} & \textbf{Queries to Jailbreak:} The mean number of attacker queries over \emph{successful} jailbreaks only. Lower QTJ indicates the model was compromised far more quickly. \\
 \textbf{TIR} & \textbf{Tool Invocation Rate:} The fraction of total tool calls classified as harmful. Measures execution-level intent beyond text-only compliance. \\
 \textbf{DBR} & \textbf{Defense Bypass Rate:} The fraction of defended attacks where the applied defense mechanism was functionally bypassed. \\
@@ -246,7 +246,7 @@ Table~\ref{tab:main_results} presents the unified benchmarking performance.
 \begin{table}[h]
 \caption{Benchmark results for PAIR and Crescendo attacks across nine target
 models. QTJ is computed over \emph{successful} jailbreaks only.  TIR = harmful tool calls / total tool
-calls.  A dash (---) indicates insufficient successful samples.  Highest vulnerability metric results (highest ASR, lowest QTJ, highest TIR) per column are presented in \textbf{bold}.}
+calls.  A dash (---) indicates insufficient successful samples.  Highest vulnerability metric results (highest MIR, lowest QTJ, highest TIR) per column are presented in \textbf{bold}.}
 \label{tab:main_results}
 \centering
 \small
@@ -257,8 +257,8 @@ calls.  A dash (---) indicates insufficient successful samples.  Highest vulnera
 \multicolumn{3}{c}{\textbf{PAIR}} &
 \multicolumn{2}{c}{\textbf{Crescendo}} \\
 \cmidrule(lr){3-5}\cmidrule(lr){6-7}
-& & \textbf{ASR} & \textbf{QTJ} & \textbf{TIR} &
-  \textbf{ASR} & \textbf{QTJ} \\
+& & \textbf{MIR} & \textbf{QTJ} & \textbf{TIR} &
+  \textbf{MIR} & \textbf{QTJ} \\
 \midrule
 \multicolumn{7}{l}{\textit{DeepSeek-R1 family}} \\
 \quad DeepSeek-R1-70B & 70B & \textbf{87.0\%} & \textbf{2.0} & 19.2\% & 66.0\% & \textbf{10.7} \\
@@ -293,9 +293,9 @@ The resulting metrics facilitate deep analytical insights, structured in Table~\
 \toprule
 \textbf{Finding} & \textbf{Description} \\
 \midrule
-\textbf{1. Reasoning Penalty} & Reasoning-optimised models (DeepSeek-R1-70B) exhibit higher PAIR vulnerability (87.0\% ASR) due to prolonged chain-of-thought pathways rendering them highly susceptible to iterative refinement. \\
-\textbf{2. Multi-turn Danger} & Crescendo attains 100\% ASR on instruction-following models (Llama-3.3-70B) by exploiting conversational consistency. \\
-\textbf{3. Alignment Scaling} & Qwen3 safety alignment demonstrates robust size-scaling properties, dropping from 57.2\% ASR to complete PAIR resistance (0\%) at 30B parameters. \\
+\textbf{1. Reasoning Penalty} & Reasoning-optimised models (DeepSeek-R1-70B) exhibit higher PAIR vulnerability (87.0\% MIR) due to prolonged chain-of-thought pathways rendering them highly susceptible to iterative refinement. \\
+\textbf{2. Multi-turn Danger} & Crescendo attains 100\% MIR on instruction-following models (Llama-3.3-70B) by exploiting conversational consistency. \\
+\textbf{3. Alignment Scaling} & Qwen3 safety alignment demonstrates robust size-scaling properties, dropping from 57.2\% MIR to complete PAIR resistance (0\%) at 30B parameters. \\
 \textbf{4. Small Model Risk} & Smaller models display disproportionately higher Tool Invocation Rates (TIR)---such as 51.3\% on Llama-3.2---suggesting severe tool execution compliance even under partial text jailbreaks. \\
 \textbf{5. Category Standard} & Vulnerability patterns across OWASP categories remain largely architecture-independent (see Appendix). \\
 \bottomrule
@@ -463,7 +463,7 @@ Figure \ref{fig:asr_category} presents structural distribution insights regardin
 \centering
 \includegraphics[width=0.85\linewidth]{figures/asr_by_category.png}
 \vspace{0.5cm}
-\caption{Detailed Attack Success Rate distribution structured by the OWASP Agentic AI Top-10 categorical frameworks. Noticeably, memory/context poisoning parameters (AAI-06) display uniformly elevated intrusion potentials spanning nearly all architectural parameters.}
+\caption{Detailed Malicious Intent Rate distribution structured by the OWASP Agentic AI Top-10 categorical frameworks. Noticeably, memory/context poisoning parameters (AAI-06) display uniformly elevated intrusion potentials spanning nearly all architectural parameters.}
 \label{fig:asr_category}
 \end{figure}
 

@@ -244,7 +244,7 @@ def load_records(results_dir: str,
 # Aggregation helpers
 # ---------------------------------------------------------------------------
 
-def asr_by_model(records: List[Dict]) -> Dict[str, float]:
+def mir_by_model(records: List[Dict]) -> Dict[str, float]:
     counts: Dict[str, List[bool]] = defaultdict(list)
     for r in records:
         counts[r["model"]].append(r["attack_success"])
@@ -254,8 +254,8 @@ def asr_by_model(records: List[Dict]) -> Dict[str, float]:
     }
 
 
-def asr_by_category(records: List[Dict]) -> Dict[str, Dict[str, float]]:
-    """Returns {category: {model: asr%}}"""
+def mir_by_category(records: List[Dict]) -> Dict[str, Dict[str, float]]:
+    """Returns {category: {model: mir%}}"""
     data: Dict[str, Dict[str, List[bool]]] = defaultdict(lambda: defaultdict(list))
     for r in records:
         cat = r["category"]
@@ -289,7 +289,7 @@ def tool_quality(records: List[Dict]) -> Dict[str, Dict[str, float]]:
 
 
 def query_efficiency(records: List[Dict]) -> Dict[str, Dict[str, float]]:
-    """{model: {avg_queries, asr%}}"""
+    """{model: {avg_queries, mir%}}"""
     buckets: Dict[str, List] = defaultdict(list)
     for r in records:
         buckets[r["model"]].append((r["queries"], r["attack_success"]))
@@ -299,7 +299,7 @@ def query_efficiency(records: List[Dict]) -> Dict[str, Dict[str, float]]:
         succs = [p[1] for p in pairs]
         result[m] = {
             "avg_queries": float(np.mean(qs)) if qs else 0.0,
-            "asr":         (sum(succs) / len(succs) * 100) if succs else 0.0,
+            "mir":         (sum(succs) / len(succs) * 100) if succs else 0.0,
         }
     return result
 
@@ -308,7 +308,7 @@ def query_efficiency(records: List[Dict]) -> Dict[str, Dict[str, float]]:
 # Chart renderers
 # ---------------------------------------------------------------------------
 
-def chart_asr_by_model(data: Dict[str, float], out_path: str) -> None:
+def chart_mir_by_model(data: Dict[str, float], out_path: str) -> None:
     models = list(CORE_MODELS.keys())
     values = [data.get(m, 0.0) for m in models]
     colors = [PALETTE.get(m, "#888") for m in models]
@@ -339,13 +339,13 @@ def chart_asr_by_model(data: Dict[str, float], out_path: str) -> None:
     print(f"  ✓ {out_path}")
 
 
-def chart_asr_by_owasp(data: Dict[str, Dict[str, float]],
+def chart_mir_by_owasp(data: Dict[str, Dict[str, float]],
                        out_path: str,
                        ext_data: Optional[Dict[str, Dict[str, float]]] = None) -> None:
     """
-    Grouped bar chart: ASR per OWASP category.
+    Grouped bar chart: MIR per OWASP category.
     Core models use solid bars; extended models use hatched bars.
-    ext_data: optional {category: {model: asr%}} for extended models.
+    ext_data: optional {category: {model: mir%}} for extended models.
     """
     owasp_cats = OWASP_ORDER
 
@@ -384,7 +384,7 @@ def chart_asr_by_owasp(data: Dict[str, Dict[str, float]],
                        ha="right", rotation_mode="anchor")
     ax.set_ylim(0, 120)
     ax.set_ylabel("Attack Success Rate (%)")
-    title = "ASR by OWASP Agentic AI Top-10 Category (PAIR, No Defense)"
+    title = "MIR by OWASP Agentic AI Top-10 Category (PAIR, No Defense)"
     if ext_data:
         title += "  [▦ = small/older models]"
     ax.set_title(title, fontsize=12)
@@ -434,7 +434,7 @@ def chart_query_efficiency(data: Dict[str, Dict[str, float]],
                            out_path: str,
                            ext_data: Optional[Dict[str, Dict[str, float]]] = None) -> None:
     """
-    Scatter: avg QTJ vs ASR per model.
+    Scatter: avg QTJ vs MIR per model.
     Core models: filled circles. Extended models: hollow diamonds.
     Labels connected with arrows to avoid collision.
     """
@@ -444,15 +444,15 @@ def chart_query_efficiency(data: Dict[str, Dict[str, float]],
     all_models  = core_models + ext_models
     all_x = [data[m]["avg_queries"] for m in core_models] + \
             ([ext_data[m]["avg_queries"] for m in ext_models] if ext_data else [])
-    all_y = [data[m]["asr"] for m in core_models] + \
-            ([ext_data[m]["asr"] for m in ext_models] if ext_data else [])
+    all_y = [data[m]["mir"] for m in core_models] + \
+            ([ext_data[m]["mir"] for m in ext_models] if ext_data else [])
     all_c = [PALETTE.get(m, "#888") for m in all_models]
 
     fig, ax = plt.subplots(figsize=(8, 6))
 
     # Core: filled circles
     cx = [data[m]["avg_queries"] for m in core_models]
-    cy = [data[m]["asr"]         for m in core_models]
+    cy = [data[m]["mir"]         for m in core_models]
     cc = [PALETTE.get(m, "#888") for m in core_models]
     ax.scatter(cx, cy, c=cc, s=260, zorder=5, edgecolors="#333333", linewidths=1.0,
                marker="o", label="Core (4 model)")
@@ -460,7 +460,7 @@ def chart_query_efficiency(data: Dict[str, Dict[str, float]],
     # Extended: hollow diamonds
     if ext_data and ext_models:
         ex = [ext_data[m]["avg_queries"] for m in ext_models]
-        ey = [ext_data[m]["asr"]         for m in ext_models]
+        ey = [ext_data[m]["mir"]         for m in ext_models]
         ec = [PALETTE.get(m, "#888") for m in ext_models]
         for xv, yv, col in zip(ex, ey, ec):
             # Outer ring diamond (colored edge, white fill)
@@ -505,7 +505,7 @@ def chart_query_efficiency(data: Dict[str, Dict[str, float]],
 
     ax.set_xlabel("Avg Queries to Jailbreak (QTJ)")
     ax.set_ylabel("Attack Success Rate (%)")
-    ax.set_title("Query Efficiency vs ASR (PAIR, No Defense)")
+    ax.set_title("Query Efficiency vs MIR (PAIR, No Defense)")
     ax.set_xlim(left=0)
     ax.set_ylim(0, 115)
     ax.grid(True, alpha=0.4)
@@ -595,17 +595,17 @@ def main() -> None:
     print("    Per-model counts:", dict(model_counts))
 
     # ---- Aggregations ----
-    asr_model_data   = asr_by_model(records)
-    asr_owasp_data   = asr_by_category(records)
-    ext_owasp_data   = asr_by_category(ext_records) if ext_records else None
+    mir_model_data   = mir_by_model(records)
+    mir_owasp_data   = mir_by_category(records)
+    ext_owasp_data   = mir_by_category(ext_records) if ext_records else None
     tool_data        = tool_quality(records)
     qeff_data        = query_efficiency(records)
     ext_qeff_data    = query_efficiency(ext_records) if ext_records else None
 
     # ---- Charts ----
     print("\n📊  Generating charts ...")
-    chart_asr_by_model(asr_model_data,            str(out_dir / "asr_by_model.png"))
-    chart_asr_by_owasp(asr_owasp_data,            str(out_dir / "asr_by_category.png"),
+    chart_mir_by_model(mir_model_data,            str(out_dir / "mir_by_model.png"))
+    chart_mir_by_owasp(mir_owasp_data,            str(out_dir / "mir_by_category.png"),
                        ext_data=ext_owasp_data)
     chart_tool_quality(tool_data,                 str(out_dir / "tool_quality.png"))
     chart_query_efficiency(qeff_data,             str(out_dir / "query_efficiency.png"),
@@ -623,9 +623,9 @@ def main() -> None:
             "total_records": len(records),
             "per_model_n":   dict(model_counts),
         },
-        "asr_by_model":     asr_model_data,
-        "asr_by_category":  {
-            cat: vals for cat, vals in sorted(asr_owasp_data.items())
+        "mir_by_model":     mir_model_data,
+        "mir_by_category":  {
+            cat: vals for cat, vals in sorted(mir_owasp_data.items())
         },
         "tool_quality":     tool_data,
         "query_efficiency": qeff_data,
@@ -637,13 +637,13 @@ def main() -> None:
     print(f"  ✓ {data_path}")
 
     print("\n✅  Done. All assets written to:", out_dir)
-    print("\nPer-model ASR summary (core):")
-    for m, asr in asr_model_data.items():
-        print(f"  {m:20s}  {asr:.1f}%")
+    print("\nPer-model MIR summary (core):")
+    for m, mir in mir_model_data.items():
+        print(f"  {m:20s}  {mir:.1f}%")
     if ext_qeff_data:
         print("\nExtended model query efficiency:")
         for m, v in ext_qeff_data.items():
-            print(f"  {m:20s}  ASR={v['asr']:.1f}%  QTJ={v['avg_queries']:.2f}")
+            print(f"  {m:20s}  MIR={v['mir']:.1f}%  QTJ={v['avg_queries']:.2f}")
 
 
 if __name__ == "__main__":
