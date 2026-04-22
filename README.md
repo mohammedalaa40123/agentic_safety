@@ -247,3 +247,25 @@ agentic_safety/
 | `WANDB_API_KEY` | Weights & Biases logging |
 | `HF_TOKEN` | Hugging Face Space deployment & dataset upload |
 | `HF_RESULTS_DATASET` | Auto-mirror results from HF dataset on startup |
+
+---
+
+## 🎓 Academic Declarations (ECE 570 Course Project)
+
+In accordance with course policies, the code provenance is detailed below:
+
+*   **Original Code (Written entirely by us from scratch)**:
+    *   `attacks/*` (except specific GCG loss computations adapted below).
+    *   `defenses/*` (Gradient Cuff, Progent, StepShield wrappers).
+    *   `metrics/*` (ASR, QTJ, TIR definitions and implementations).
+    *   `tools/*` (Docker/bubblewrap sandboxing environment).
+    *   `server/*` and `frontend/*` (Full FastAPI and React interactive dashboard).
+    *   `scripts/gen_benchmark_charts.py` and `scripts/upload_results_to_hf.py`.
+*   **Adapted/External Code**:
+    *   `attacks/gcg.py` (Lines 85-115) adapts token-level gradient descent logic from the original GCG repository (`https://github.com/llm-attacks/llm-attacks`). Minor modifications made to integrate with our multi-turn target LLM classes.
+    *   `runner/prompts.py` (Lines 20-40) incorporates system prompts derived from the PAIR framework's paper supplementary materials. 
+*   **Datasets & Models**:
+    *   All customized goal scenarios in `data/` were generated locally. 
+    *   The framework automatically downloads necessary artifacts (e.g., HF model weights if using local Transformers) via the `transformers` / `huggingface_hub` libraries. Result files are mirrored via explicit scripts downloading directly from our HF Dataset: `https://huggingface.co/datasets/Mo-alaa/agentic-safety-results`.
+
+These clarifications apply strictly to the `v1.0` benchmark submission code state.
