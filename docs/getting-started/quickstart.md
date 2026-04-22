@@ -14,22 +14,21 @@ git clone https://github.com/mohammedalaa40123/agentic_safety.git
 cd agentic_safety
 
 # Create and activate the Python environment
-python -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -e .
+uv pip install -e .
 ```
 
 Install server support if you plan to run the FastAPI backend:
 
 ```bash
-pip install -e .[server]
+uv pip install -e .[server]
 ```
 
 Install documentation dependencies:
 
 ```bash
-pip install -r requirements-docs.txt
+uv pip install -r requirements-docs.txt
 ```
 
 ## 2) Set provider API keys

@@ -16,9 +16,9 @@ const LANE_X: Record<string, number> = {
   goal: 80,
   attacker: 320,
   target: 560,
-  judge: 830,
-  tool: 690,
-  defense: 1060,
+  tool: 850,
+  judge: 1200,
+  defense: 1500,
 }
 
 const LANE_LABELS: Record<string, string> = {

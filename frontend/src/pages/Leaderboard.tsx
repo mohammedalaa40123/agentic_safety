@@ -70,7 +70,7 @@ function ColTooltip({ label, tip }: { label: string; tip: string }) {
       <span className="text-[8px] text-slate-700 group-hover:text-indigo-500 transition-colors select-none">●</span>
       {/* Popup */}
       <span
-        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50
+        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50
           opacity-0 group-hover:opacity-100 pointer-events-none
           transition-opacity duration-150
           px-3 py-2 rounded-xl text-center leading-snug"
@@ -88,11 +88,11 @@ function ColTooltip({ label, tip }: { label: string; tip: string }) {
         <span className="text-[10px] text-slate-400">{tip}</span>
         {/* Arrow */}
         <span
-          className="absolute top-full left-1/2 -translate-x-1/2 -mt-px w-0 h-0"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-px w-0 h-0"
           style={{
             borderLeft: '5px solid transparent',
             borderRight: '5px solid transparent',
-            borderTop: '5px solid rgba(99,102,241,0.35)',
+            borderBottom: '5px solid rgba(99,102,241,0.35)',
           }}
         />
       </span>

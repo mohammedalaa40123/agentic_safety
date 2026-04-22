@@ -1,3 +1,12 @@
+---
+title: Agentic Safety Eval
+emoji: 🛡️
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
 <div align="center">
 
 # 🛡️ Agentic Safety Evaluation Framework
@@ -136,9 +145,9 @@ Attack surfaces: **prompt injection**, **multi-turn manipulation**, **tool misus
 # 1. Clone and install
 git clone https://github.com/mohammedalaa40123/agentic_safety
 cd agentic_safety
-python -m venv .venv && source .venv/bin/activate
-pip install -e .
-
+uv venv .venv && source .venv/bin/activate
+uv pip install -e .
+uv sync
 # 2. Set provider keys
 export GENAI_STUDIO_API_KEY="..."
 export OPENAI_API_KEY="..."        # optional

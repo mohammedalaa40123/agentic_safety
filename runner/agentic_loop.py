@@ -131,6 +131,21 @@ def run_agentic_loop(target_lm, sandbox: AgenticSandbox, hf_tools: List[Dict[str
     last_response = ""
 
     for step in range(max_steps):
+        if defense_registry is not None:
+            dres = defense_registry.filter_prompt(goal)
+            if dres.blocked:
+                stages.append({
+                    "step": step + 1,
+                    "thought": f"Blocked by {dres.defense_name}",
+                    "action": "blocked_by_defense",
+                    "arguments": {},
+                    "observation": dres.reason,
+                })
+                # If blocked before first step, override response. Otherwise, stop loop.
+                if step == 0:
+                    last_response = f"[BLOCKED] {dres.reason}"
+                break
+
         if hasattr(target_lm, "chat"):
             try:
                 responses = target_lm.chat([messages], tools=hf_tools)

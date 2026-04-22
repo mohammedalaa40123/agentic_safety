@@ -278,7 +278,8 @@ def run_attack_mode(cfg: RunConfig, attack_runners, goals: List[Dict[str, str]],
             else:
                 for def_name, defense in defense_iter:
                     # Step 1: prompt-level check
-                    prompt_r = defense.filter_prompt(goal)
+                    prompt_to_check = outcome.jailbreak_prompt if outcome.jailbreak_prompt else goal
+                    prompt_r = defense.filter_prompt(prompt_to_check)
                     if prompt_r.blocked:
                         rec = AttackOutcome(
                             goal=goal, category=category, attack_name=outcome.attack_name,
@@ -451,7 +452,7 @@ def main() -> None:
             target_lm,
             judge_lm,
             sandbox_builder,
-            defense_registry=None,  # defenses are evaluated independently per outcome in run_attack_mode
+            defense_registry=defense_registry,
         )
         if cfg.mode == "baseline":
             attack_runners = [r for r in attack_runners if r.name in {"baseline", "direct"}]
