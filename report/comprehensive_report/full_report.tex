@@ -17,7 +17,7 @@
 \definecolor{NeutralBlue}{HTML}{457B9D}
 
 \title{\textbf{Agentic LLM Safety Benchmark Report}\\
-       \large Attack Success Rate, Tool Quality, and Vulnerability Analysis}
+       \large Malicious Intent Rate, Tool Quality, and Vulnerability Analysis}
 \author{Research Report --- ECE 570 Agentic Safety Study}
 \date{\today}
 
@@ -47,7 +47,7 @@ Vulnerability categories follow the \textbf{OWASP Agentic AI Top-10 (AAI)} taxon
 
 \subsection{Per-Model Record Summary}
 
-Table~\ref{tab:model_summary} summarises the number of records evaluated, overall ASR, Task Success Rate (TSR), average queries, and average duration for each model.
+Table~\ref{tab:model_summary} summarises the number of records evaluated, overall MIR, Task Success Rate (TSR), average queries, and average duration for each model.
 
 \begin{table}[H]
 \centering
@@ -55,7 +55,7 @@ Table~\ref{tab:model_summary} summarises the number of records evaluated, overal
 \label{tab:model_summary}
 \begin{tabular}{lrrrrrr}
 \toprule
-\textbf{Model} & \textbf{N} & \textbf{ASR (\%)} & \textbf{TSR (\%)} & \textbf{Avg Queries} & \textbf{Avg Iters} & \textbf{Avg Duration (s)} \\
+\textbf{Model} & \textbf{N} & \textbf{MIR (\%)} & \textbf{TSR (\%)} & \textbf{Avg Queries} & \textbf{Avg Iters} & \textbf{Avg Duration (s)} \\
 \midrule
 
   DeepSeek-R1-14B & 377 & 74.0\% & 77.7\% & 4.67 & 3.63 & 158.6 \\
@@ -72,24 +72,24 @@ Table~\ref{tab:model_summary} summarises the number of records evaluated, overal
 \end{table}
 
 
-\section{Attack Success Rate Analysis}
-\label{sec:asr}
+\section{Malicious Intent Rate Analysis}
+\label{sec:MIR}
 
-\subsection{ASR by Model and Attack Strategy}
+\subsection{MIR by Model and Attack Strategy}
 
-Figure~\ref{fig:asr_comparison} visualises ASR across all models for each attack strategy. Table~\ref{tab:asr_full} provides the exact numerical breakdown.
+Figure~\ref{fig:MIR_comparison} visualises MIR across all models for each attack strategy. Table~\ref{tab:MIR_full} provides the exact numerical breakdown.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{asr_comparison.png}
-  \caption{Attack Success Rate (ASR) by Model and Attack Strategy.}
-  \label{fig:asr_comparison}
+  \includegraphics[width=\textwidth]{MIR_comparison.png}
+  \caption{Malicious Intent Rate (MIR) by Model and Attack Strategy.}
+  \label{fig:MIR_comparison}
 \end{figure}
 
 \begin{table}[H]
 \centering
-\caption{ASR (\%) by Model and Attack Strategy}
-\label{tab:asr_full}
+\caption{MIR (\%) by Model and Attack Strategy}
+\label{tab:MIR_full}
 
 \begin{tabular}{lccc}
 \toprule
@@ -109,25 +109,25 @@ Figure~\ref{fig:asr_comparison} visualises ASR across all models for each attack
 \end{table}
 
 
-\subsection{Overall ASR per Attack Strategy}
+\subsection{Overall MIR per Attack Strategy}
 
-Figure~\ref{fig:attack_asr} shows the aggregate ASR collapsed across all models for each attack method.
+Figure~\ref{fig:attack_MIR} shows the aggregate MIR collapsed across all models for each attack method.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.55\textwidth]{attack_asr_comparison.png}
-  \caption{Aggregate ASR by Attack Strategy (all models combined).}
-  \label{fig:attack_asr}
+  \includegraphics[width=0.55\textwidth]{attack_MIR_comparison.png}
+  \caption{Aggregate MIR by Attack Strategy (all models combined).}
+  \label{fig:attack_MIR}
 \end{figure}
 
 \subsection{Dataset Comparison}
 
-Figure~\ref{fig:dataset_cmp} compares the ASR observed in the \texttt{results/} pipeline vs.\ the \texttt{agentic\_experiments\_v2\_500/} pipeline for models that appear in both.
+Figure~\ref{fig:dataset_cmp} compares the MIR observed in the \texttt{results/} pipeline vs.\ the \texttt{agentic\_experiments\_v2\_500/} pipeline for models that appear in both.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{dataset_comparison.png}
-  \caption{ASR comparison across both experiment dataset pipelines.}
+  \caption{MIR comparison across both experiment dataset pipelines.}
   \label{fig:dataset_cmp}
 \end{figure}
 
@@ -135,36 +135,36 @@ Figure~\ref{fig:dataset_cmp} compares the ASR observed in the \texttt{results/} 
 \section{Vulnerability by Category (OWASP AAI)}
 \label{sec:category}
 
-\subsection{ASR Heatmap}
+\subsection{MIR Heatmap}
 
 Figure~\ref{fig:heatmap} maps susceptibility per model for each OWASP AAI category.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{asr_category_heatmap.png}
-  \caption{ASR Heatmap: Model $\times$ OWASP AAI Category.}
+  \includegraphics[width=\textwidth]{MIR_category_heatmap.png}
+  \caption{MIR Heatmap: Model $\times$ OWASP AAI Category.}
   \label{fig:heatmap}
 \end{figure}
 
-\subsection{ASR Radar Chart}
+\subsection{MIR Radar Chart}
 
 Figure~\ref{fig:radar} presents the same data in a radar/spider chart format to highlight which categories are universally high-risk.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.75\textwidth]{category_radar.png}
-  \caption{Radar chart of per-category ASR across all models.}
+  \caption{Radar chart of per-category MIR across all models.}
   \label{fig:radar}
 \end{figure}
 
 \subsection{Per-Category Detailed Table}
 
-Table~\ref{tab:category_asr} lists the exact ASR for every model-category combination.
+Table~\ref{tab:category_MIR} lists the exact MIR for every model-category combination.
 
 \begin{table}[H]
 \centering
-\caption{ASR (\%) by OWASP AAI Category and Model}
-\label{tab:category_asr}
+\caption{MIR (\%) by OWASP AAI Category and Model}
+\label{tab:category_MIR}
 \small
 
 \begin{tabular}{lccccccccc}
@@ -239,12 +239,12 @@ Figure~\ref{fig:harmful_rate} ranks models by their harmful tool execution rate.
 
 \subsection{Query Efficiency Scatter}
 
-Figure~\ref{fig:qeff} plots each model's average number of queries against its overall ASR, revealing whether higher interaction budgets correlate with success.
+Figure~\ref{fig:qeff} plots each model's average number of queries against its overall MIR, revealing whether higher interaction budgets correlate with success.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.7\textwidth]{query_efficiency.png}
-  \caption{Average queries to jailbreak vs.\ ASR per model.}
+  \caption{Average queries to jailbreak vs.\ MIR per model.}
   \label{fig:qeff}
 \end{figure}
 
@@ -259,15 +259,15 @@ Figure~\ref{fig:qdist} shows histograms of query counts across experiments, illu
   \label{fig:qdist}
 \end{figure}
 
-\subsection{Iterations vs.\ ASR}
+\subsection{Iterations vs.\ MIR}
 
-Figure~\ref{fig:iter_asr} correlates average attack iterations with ASR.
+Figure~\ref{fig:iter_MIR} correlates average attack iterations with MIR.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.65\textwidth]{iterations_vs_asr.png}
-  \caption{Average attack iterations vs.\ ASR per model.}
-  \label{fig:iter_asr}
+  \includegraphics[width=0.65\textwidth]{iterations_vs_MIR.png}
+  \caption{Average attack iterations vs.\ MIR per model.}
+  \label{fig:iter_MIR}
 \end{figure}
 
 \subsection{Duration Distribution}
@@ -285,6 +285,6 @@ Figure~\ref{fig:duration} compares the wall-clock duration of runs across models
 \section{Conclusion}
 \label{sec:conclusion}
 
-Across all experiments, the PAIR attack achieved the highest aggregate ASR, while Crescendo showed strong performance on select models. Larger models (70B scale) do not uniformly resist attacks better --- DeepSeek-R1-70B and Llama-3.3-70B both exhibited ASRs above 80\%. The OWASP AAI-06 (Memory/Context Poisoning) and AAI-07 (Insecure Orchestration) categories showed the highest average susceptibility. Tool execution quality was generally high ($>$70\% correct), but harmful tool call rates highlight that capable models are more likely to successfully execute attacker-directed tool invocations when jailbroken.
+Across all experiments, the PAIR attack achieved the highest aggregate MIR, while Crescendo showed strong performance on select models. Larger models (70B scale) do not uniformly resist attacks better --- DeepSeek-R1-70B and Llama-3.3-70B both exhibited MIRs above 80\%. The OWASP AAI-06 (Memory/Context Poisoning) and AAI-07 (Insecure Orchestration) categories showed the highest average susceptibility. Tool execution quality was generally high ($>$70\% correct), but harmful tool call rates highlight that capable models are more likely to successfully execute attacker-directed tool invocations when jailbroken.
 
 \end{document}

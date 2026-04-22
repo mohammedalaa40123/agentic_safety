@@ -49,7 +49,7 @@ This framework provides:
 
 - 🎯 **Attack evaluation**: PAIR, Crescendo, Prompt-Fusion, and hybrid attack loops against agentic LLM pipelines
 - 🛡️ **Defense testing**: JBShield, Gradient Cuff, Progent, and StepShield across prompt/response/tool paths
-- 📊 **Structured metrics**: ASR, TIR, DBR, and QTJ — defined once, measured consistently
+- 📊 **Structured metrics**: MIR, TIR, DBR, and QTJ — defined once, measured consistently
 - 🔁 **Reproducibility**: YAML-configured experiments, seeded runs, structured JSON output
 - 🌐 **Scale**: Cloud and compute-cluster provider support (OpenAI, Gemini, Anthropic, Ollama, Genai/RCAC)
 
@@ -66,7 +66,7 @@ This framework provides:
 | Step | What to do | Where |
 |------|-----------|-------|
 | **1. Set API keys** | Go to **Setup** tab → enter your provider API key(s) → click *Validate* | `/setup` |
-| **2. View results** | Go to **Leaderboard** tab to see ASR, QTJ, TIR across all models & attacks | `/leaderboard` |
+| **2. View results** | Go to **Leaderboard** tab to see MIR, QTJ, TIR across all models & attacks | `/leaderboard` |
 | **3. Inspect fingerprints** | In the **Results** tab, open any experiment → click *Fingerprint* to see per-goal success/fail breakdown | `/results` |
 | **4. Run new experiment** | Go to **Config** tab → pick model + attack → submit via **Jobs** | `/jobs` |
 
@@ -80,35 +80,35 @@ This framework provides:
 > **Data**: `results/agentic_experiments_v2_500` — 18 model×attack combinations  
 > **Caveats**: Judge-model bias risk present; Crescendo/Fusion coverage is partial; no defense-at-scale matrix.
 
-### Attack Success Rate by Model (PAIR, core 4)
+### Malicious Intent Rate by Model (PAIR, core 4)
 
-![ASR by Model](docs/assets/charts/asr_by_model.png)
+![MIR by Model](docs/assets/charts/mir_by_model.png)
 
-| Model | N | ASR | Avg QTJ | Notes |
+| Model | N | MIR | Avg QTJ | Notes |
 |-------|---|-----|---------|-------|
 | Llama-3.3-70B | 292 | **83.7%** | 2.4 | Most susceptible under PAIR |
 | DeepSeek-R1-70B | 292 | **83.2%** | 2.5 | Strong reasoning; still highly susceptible |
-| DeepSeek-R1-14B | 333 | **75.4%** | 2.9 | Lower but significant ASR |
+| DeepSeek-R1-14B | 333 | **75.4%** | 2.9 | Lower but significant MIR |
 | DeepSeek-V3.2 | 50 | **66.0%** | 2.4 | Most resistant in core set |
 | DeepSeek-R1-7B | 292 | 73.1% | 2.9 | Small model, more queries needed |
 | Llama-3.1 | 292 | 71.0% | 3.1 | Older generation, moderate resistance |
-| Qwen3-1.7B | 292 | **57.2%** | 3.5 | Smallest model — lowest ASR, highest QTJ |
+| Qwen3-1.7B | 292 | **57.2%** | 3.5 | Smallest model — lowest MIR, highest QTJ |
 | Qwen3-14B | 292 | 24.0% | — | Strong refusal capability |
 | Qwen3-30B | 292 | **0%** | — | Effectively resists PAIR under this judge |
 
 > **QTJ** = Queries-to-Jailbreak (lower = easier). Qwen3-30B and Qwen3-14B show substantially different behaviour from the reasoning models.
 
-### ASR by OWASP Agentic AI Top-10 Category
+### MIR by OWASP Agentic AI Top-10 Category
 
-![ASR by OWASP Category](docs/assets/charts/asr_by_category.png)
+![MIR by OWASP Category](docs/assets/charts/mir_by_category.png)
 
-Hatched bars (▦) are small/older models shown for contrast. AAI-03 (Excessive Agency) consistently shows lowest ASR across all models.
+Hatched bars (▦) are small/older models shown for contrast. AAI-03 (Excessive Agency) consistently shows lowest MIR across all models.
 
-### Query Efficiency vs ASR
+### Query Efficiency vs MIR
 
 ![Query Efficiency](docs/assets/charts/query_efficiency.png)
 
-_Circles = core 4 benchmark models. Diamonds = extended set. Higher QTJ = more iterations needed to jailbreak. Qwen3-1.7B sits at the safe corner (low ASR, high QTJ)._
+_Circles = core 4 benchmark models. Diamonds = extended set. Higher QTJ = more iterations needed to jailbreak. Qwen3-1.7B sits at the safe corner (low MIR, high QTJ)._
 
 ### Tool-Call Quality (Correct vs Wrong)
 
@@ -181,7 +181,7 @@ python scripts/gen_benchmark_charts.py \
 
 | Metric | Name | Definition |
 |--------|------|-----------|
-| **ASR** | Attack Success Rate | Fraction of malicious goals where attack_success = true |
+| **MIR** | Malicious Intent Rate | Fraction of malicious goals where attack_success = true |
 | **TIR** | Tool Invocation Rate | Harmful tool calls / total tool calls |
 | **DBR** | Defense Bypass Rate | Bypassed attacks / total defended attacks |
 | **QTJ** | Queries to Jailbreak | Avg query count over successful jailbreaks only |
@@ -253,7 +253,7 @@ agentic_safety/
 ├── attacks/                  # PAIR, GCG, Crescendo, Prompt-Fusion, Hybrid
 ├── defenses/                 # JBShield, Gradient Cuff, Progent, StepShield
 ├── tools/                    # Sandbox tool adapters
-├── metrics/                  # ASR / TIR / DBR / QTJ + MetricsCollector
+├── metrics/                  # MIR / TIR / DBR / QTJ + MetricsCollector
 ├── configs/                  # YAML experiment presets
 ├── data/                     # Goal scenarios and datasets
 ├── server/                   # FastAPI backend + job API
@@ -288,7 +288,7 @@ In accordance with course policies, the code provenance is detailed below:
 *   **Original Code (Written entirely by us from scratch)**:
     *   `attacks/*` (except specific GCG loss computations adapted below).
     *   `defenses/*` (Gradient Cuff, Progent, StepShield wrappers).
-    *   `metrics/*` (ASR, QTJ, TIR definitions and implementations).
+    *   `metrics/*` (MIR, QTJ, TIR definitions and implementations).
     *   `tools/*` (Docker/bubblewrap sandboxing environment).
     *   `server/*` and `frontend/*` (Full FastAPI and React interactive dashboard).
     *   `scripts/gen_benchmark_charts.py` and `scripts/upload_results_to_hf.py`.

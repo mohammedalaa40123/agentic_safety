@@ -26,13 +26,13 @@
       "Llama-3.3-70B": 283
     }
   },
-  "asr_by_model": {
+  "MIR_by_model": {
     "DeepSeek-V3.2": 66.0,
     "DeepSeek-R1-14B": 75.37537537537537,
     "DeepSeek-R1-70B": 83.18318318318319,
     "Llama-3.3-70B": 83.74558303886926
   },
-  "asr_by_category": {
+  "MIR_by_category": {
     "AAI01-BrokenAccessControl": {
       "DeepSeek-V3.2": 80.0,
       "DeepSeek-R1-14B": 80.0,
@@ -110,19 +110,19 @@
   "query_efficiency": {
     "DeepSeek-V3.2": {
       "avg_queries": 2.44,
-      "asr": 66.0
+      "MIR": 66.0
     },
     "DeepSeek-R1-14B": {
       "avg_queries": 2.87987987987988,
-      "asr": 75.37537537537537
+      "MIR": 75.37537537537537
     },
     "DeepSeek-R1-70B": {
       "avg_queries": 2.5015015015015014,
-      "asr": 83.18318318318319
+      "MIR": 83.18318318318319
     },
     "Llama-3.3-70B": {
       "avg_queries": 2.371024734982332,
-      "asr": 83.74558303886926
+      "MIR": 83.74558303886926
     }
   }
 }

@@ -16,14 +16,14 @@
 \section{Introduction}
 This report details the evaluation of multiple top-tier models against multi-turn autonomous attacks (including PAIR, Crescendo, and Prompt Fusion). The analytical insights aggregate \textbf{2560} unique experimental records over \textbf{9} models spanning multiple experiments within `results` and `agentic\_experiments\_v2\_500`.
 
-\section{Overall Attack Success Rates}
-Figure~\ref{fig:asr} compares the Attack Success Rate (ASR) of different models under varying attack structures. 
+\section{Overall Malicious Intent Rates}
+Figure~\ref{fig:MIR} compares the Malicious Intent Rate (MIR) of different models under varying attack structures. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{asr_comparison.png}
-    \caption{Attack Success Rate (ASR) Comparison}
-    \label{fig:asr}
+    \includegraphics[width=0.85\textwidth]{MIR_comparison.png}
+    \caption{Malicious Intent Rate (MIR) Comparison}
+    \label{fig:MIR}
 \end{figure}
 
 \begin{table}[H]
@@ -43,8 +43,8 @@ Figure~\ref{fig:asr} compares the Attack Success Rate (ASR) of different models 
         Qwen3-30B & 0.0\% & 0.0\% & 0.0\% \\
         \bottomrule
     \end{tabular}
-    \caption{Exact ASR values per model categorized by attack methodology.}
-    \label{tab:asr}
+    \caption{Exact MIR values per model categorized by attack methodology.}
+    \label{tab:MIR}
 \end{table}
 
 \section{Vulnerability by Category}
@@ -52,7 +52,7 @@ Agentic capabilities are prone to different typologies of attacks. The heatmap (
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1.0\textwidth]{asr_category_heatmap.png}
+    \includegraphics[width=1.0\textwidth]{MIR_category_heatmap.png}
     \caption{Vulnerability Heatmap across Agentic AI (AAI) categories.}
     \label{fig:heatmap}
 \end{figure}
@@ -68,6 +68,6 @@ Autonomous exploits often rely on intermediate tool chains. Tool Execution Quali
 \end{figure}
 
 \section{Conclusion}
-Stronger models tend to show heightened ASRs in multi-turn environments due to increased capability and agency. Iterative attacks consistently highlight differences in functional adherence parameters like tool quality.
+Stronger models tend to show heightened MIRs in multi-turn environments due to increased capability and agency. Iterative attacks consistently highlight differences in functional adherence parameters like tool quality.
 
 \end{document}
