@@ -93,6 +93,7 @@ class AgentShieldDefense(DefenseBase):
         if self._classifier_failed:
             return None
         try:
+            import torch  # noqa: F401 — must be available for transformers pipeline
             from transformers import pipeline
 
             self._classifier = pipeline(
@@ -102,9 +103,16 @@ class AgentShieldDefense(DefenseBase):
             )
             logger.info("AgentShield classifier loaded: %s", self.policy.model_id)
             return self._classifier
+        except (ImportError, NameError) as exc:
+            logger.warning(
+                "AgentShield: torch/transformers not available (%s). Using heuristics only.",
+                exc,
+            )
+            self._classifier_failed = True
+            return None
         except Exception as exc:
             logger.warning(
-                "AgentShield classifier load failed (%s). Falling back to heuristics.",
+                "AgentShield classifier load failed (%s). Using heuristics only.",
                 exc,
             )
             self._classifier_failed = True

@@ -1,0 +1,58 @@
+experiment_name: smoke_deepseek_multiattack
+description: >
+  Smoke test: 5 samples from owasp_agentic_500_jailbreaks_v2 via sample scope.
+  PAIR + Crescendo + Baseline against deepseek-r1:14b.
+  Validates scheduling queue, output parsing, and judge sanity.
+mode: attack
+output_dir: results/smoke_tests
+goals_path: data/owasp_agentic_500_jailbreaks_v2.json
+
+models:
+  attack_model: genai:llama3.3:70b
+  target_model: genai:deepseek-r1:14b
+  judge_model: genai:llama3.3:70b
+  attack_max_n_tokens: 512
+  target_max_n_tokens: 1024
+  judge_max_n_tokens: 512
+  attack_calls_per_minute: 20
+  target_calls_per_minute: 20
+  judge_calls_per_minute: 20
+
+sandbox:
+  enabled: true
+  sandbox_root: /tmp/agentic_sandbox_smoke
+  tools: [file_io, code_exec, web_browse, network]
+  code_timeout: 10
+  code_exec_backend: auto
+  code_exec_require_isolation: false
+  web_timeout: 10
+  net_sandbox: true
+  web_sandbox: true
+  max_steps: 5
+
+attacks:
+  - name: pair
+    enabled: true
+    n_iterations: 3
+  - name: crescendo
+    enabled: true
+    n_turns: 4
+  - name: baseline
+    enabled: true
+  - name: gcg
+    enabled: false
+  - name: prompt_fusion
+    enabled: false
+
+baseline:
+  enabled: false
+
+defenses:
+  enabled: false
+  active: []
+
+wandb:
+  enabled: false
+
+logging:
+  verbose: true

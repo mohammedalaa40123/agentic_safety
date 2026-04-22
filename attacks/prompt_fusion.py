@@ -15,18 +15,15 @@ from enum import Enum
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
-import torch
-import numpy as np
-
-# Allow importing from the existing hybrid_jailbreak codebase
-_HYBRID_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "hybrid_jailbreak")
-if _HYBRID_DIR not in sys.path:
-    sys.path.insert(0, os.path.abspath(_HYBRID_DIR))
-
-from gcg import GCGAttackPrompt, GCGPromptManager, token_gradients
-from llm_attacks import get_embedding_matrix, get_embeddings
-
 logger = logging.getLogger(__name__)
+
+# GCG / torch are optional heavy dependencies — imported lazily inside __init__
+# so the module can always be imported even when they are not installed.
+_GCG_AVAILABLE = False
+GCGAttackPrompt = None  # type: ignore[assignment]
+GCGPromptManager = None  # type: ignore[assignment]
+token_gradients = None  # type: ignore[assignment]
+
 
 
 class FusionStrategy(str, Enum):
@@ -82,13 +79,32 @@ class PromptFusionEngine:
         conv_template,
         model,
     ):
+        global _GCG_AVAILABLE, GCGAttackPrompt, GCGPromptManager, token_gradients
         self.config = config
         self.tokenizer = tokenizer
         self.conv_template = conv_template
         self.model = model
 
+        # Lazy-load GCG + torch from the optional hybrid_jailbreak directory
+        if not _GCG_AVAILABLE:
+            try:
+                import torch  # noqa: F401
+                _HYBRID_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "hybrid_jailbreak")
+                _HYBRID_DIR = os.path.abspath(_HYBRID_DIR)
+                if _HYBRID_DIR not in sys.path:
+                    sys.path.insert(0, _HYBRID_DIR)
+                from gcg import GCGAttackPrompt as _GAP, GCGPromptManager as _GPM, token_gradients as _TG  # type: ignore
+                GCGAttackPrompt = _GAP
+                GCGPromptManager = _GPM
+                token_gradients = _TG
+                _GCG_AVAILABLE = True
+                logger.info("GCG (hybrid_jailbreak) loaded successfully.")
+            except (ImportError, ModuleNotFoundError) as exc:
+                logger.warning(f"GCG not available ({exc}); PromptFusionEngine will fall back to PAIR-only mode.")
+
         # Build GCG prompt manager once
-        self._pm: Optional[GCGPromptManager] = None
+        self._pm: Optional[object] = None
+        self._gcg_ready = _GCG_AVAILABLE
 
     # ------------------------------------------------------------------
     # Public API
@@ -103,8 +119,21 @@ class PromptFusionEngine:
         """
         For each PAIR prompt, compute GCG gradients and fuse optimal tokens
         using every configured strategy.  Returns the best fusion per prompt
-        (lowest GCG loss).
+        (lowest GCG loss).  Falls back to PAIR-only when GCG is not available.
         """
+        # ── GCG-unavailable fallback ──────────────────────────────────────────
+        if not self._gcg_ready:
+            return [
+                FusionResult(
+                    fused_prompt=p,
+                    pair_prompt=p,
+                    gcg_tokens="",
+                    strategy=self.config.strategies[0] if self.config.strategies else FusionStrategy.MIDPOINT,
+                    gcg_loss=float("inf"),
+                )
+                for p in pair_prompts
+            ]
+
         results: List[FusionResult] = []
 
         for prompt_text in pair_prompts:

@@ -37,6 +37,8 @@ class CodeExecTool(ToolBase):
         self.isolation_backend = (isolation_backend or "auto").lower()
         self.require_isolation = bool(require_isolation)
         self._bwrap_path = shutil.which("bwrap")
+        self._docker_path = shutil.which("docker")
+        self._docker_daemon_ok: bool | None = None  # lazily checked
         if sandbox_root is None:
             self._tmpdir = tempfile.mkdtemp(prefix="agentic_code_")
             self.sandbox_root = self._tmpdir
@@ -44,13 +46,36 @@ class CodeExecTool(ToolBase):
             self.sandbox_root = sandbox_root
             os.makedirs(sandbox_root, exist_ok=True)
 
+    def _docker_available(self) -> bool:
+        """Return True only if the docker binary exists AND the daemon is reachable."""
+        if not self._docker_path:
+            return False
+        if self._docker_daemon_ok is None:
+            try:
+                import subprocess as _sp
+                result = _sp.run(
+                    [self._docker_path, "info"],
+                    capture_output=True, timeout=3,
+                )
+                self._docker_daemon_ok = (result.returncode == 0)
+            except Exception:
+                self._docker_daemon_ok = False
+        return self._docker_daemon_ok
+
     def _effective_backend(self) -> str:
         if self.isolation_backend in {"none", "local"}:
             return "local"
         if self.isolation_backend == "bwrap":
             return "bwrap" if self._bwrap_path else "missing"
+        if self.isolation_backend == "docker":
+            return "docker" if self._docker_available() else "missing"
         if self.isolation_backend == "auto":
-            return "bwrap" if self._bwrap_path else "missing"
+            # Prefer bwrap (Linux), fall back to docker if daemon is running, else local
+            if self._bwrap_path:
+                return "bwrap"
+            if self._docker_available():
+                return "docker"
+            return "local"   # no isolation available — run in-process sandbox
         return "missing"
 
     def _set_limits(self) -> None:
@@ -70,6 +95,25 @@ class CodeExecTool(ToolBase):
         except Exception:
             pass
 
+    def _build_docker_cmd(self, script_path: str) -> list[str]:
+        if not self._docker_path:
+            raise RuntimeError("docker executable not found")
+        return [
+            self._docker_path, "run",
+            "--rm",
+            "--network", "none",
+            "--memory", "256m",
+            "--memory-swap", "256m",
+            "--cpus", "0.5",
+            "--read-only",
+            "--tmpfs", "/tmp",
+            "-v", f"{self.sandbox_root}:/work:rw",
+            "-w", "/work",
+            "--security-opt", "no-new-privileges",
+            "python:3.11-slim",
+            "python3", f"/work/{os.path.basename(script_path)}",
+        ]
+
     def _build_bwrap_cmd(self, script_path: str) -> list[str]:
         if not self._bwrap_path:
             raise RuntimeError("bwrap executable not found")
@@ -82,8 +126,13 @@ class CodeExecTool(ToolBase):
             self._bwrap_path,
             "--die-with-parent",
             "--new-session",
-            "--unshare-all",
+            # Use explicit flags instead of --unshare-all to avoid --unshare-user
+            # and --unshare-cgroup, which require kernel.unprivileged_userns_clone=1
+            # (not available in HF Spaces / most container runtimes).
             "--unshare-net",
+            "--unshare-pid",
+            "--unshare-ipc",
+            "--unshare-uts",
             "--proc",
             "/proc",
             "--dev",
@@ -164,7 +213,7 @@ class CodeExecTool(ToolBase):
             return ToolResult(
                 tool_name=self.name,
                 success=False,
-                output="Blocked: no command isolation backend available (bwrap required).",
+                output="Blocked: no command isolation backend available (bwrap or docker required).",
                 is_harmful=is_harmful,
                 metadata={"blocked": True, "reason": "missing_isolation_backend"},
             )
@@ -184,6 +233,14 @@ class CodeExecTool(ToolBase):
                         "HOME": "/work",
                         "PYTHONDONTWRITEBYTECODE": "1",
                     },
+                )
+            elif backend == "docker":
+                cmd = self._build_docker_cmd(script_path)
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.timeout + 30,  # extra time for container spin-up
                 )
             else:
                 proc = subprocess.run(

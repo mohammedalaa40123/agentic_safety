@@ -5,6 +5,7 @@ __all__ = [
     "GradientCuffDefense",
     "ProgentDefense",
     "StepShieldDefense",
+    "ContextGuardDefense",
     "DefenseRegistry",
 ]
 
@@ -34,6 +35,10 @@ def __getattr__(name):
         from .stepshield import StepShieldDefense as _StepShieldDefense
 
         return _StepShieldDefense
+    if name == "ContextGuardDefense":
+        from .contextguard import ContextGuardDefense as _ContextGuardDefense
+
+        return _ContextGuardDefense
     if name == "DefenseRegistry":
         from .registry import DefenseRegistry as _DefenseRegistry
 

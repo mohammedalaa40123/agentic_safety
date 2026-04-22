@@ -1,4 +1,5 @@
 import json
+import html
 import logging
 import re
 import time
@@ -10,11 +11,58 @@ logger = logging.getLogger(__name__)
 
 
 _TOOL_CALL_PATTERN = re.compile(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", re.DOTALL)
+_INVOKE_CALL_PATTERN = re.compile(r"<invoke\s+name=\"([^\"]+)\"\s*>(.*?)</invoke>", re.DOTALL | re.IGNORECASE)
+_INVOKE_PARAM_PATTERN = re.compile(
+    r"<parameter\s+name=\"([^\"]+)\"(?:\s+[^>]*)?>(.*?)</parameter>",
+    re.DOTALL | re.IGNORECASE,
+)
+_DSML_MARKER_PATTERN = re.compile(r"\uFF5CDSML\uFF5C", re.IGNORECASE)
+
+
+def _normalize_tool_markup(text: str) -> str:
+    if not text:
+        return ""
+    # Normalize vendor-specific tag prefixes like <｜DSML｜invoke ...> to <invoke ...>
+    return _DSML_MARKER_PATTERN.sub("", text)
+
+
+def _coerce_param_value(raw: str) -> Any:
+    value = html.unescape((raw or "").strip())
+    if value == "":
+        return ""
+
+    lower = value.lower()
+    if lower == "true":
+        return True
+    if lower == "false":
+        return False
+    if lower == "null":
+        return None
+
+    if value.startswith("{") or value.startswith("["):
+        try:
+            return json.loads(value)
+        except Exception:
+            pass
+
+    if re.fullmatch(r"-?\d+", value):
+        try:
+            return int(value)
+        except Exception:
+            pass
+    if re.fullmatch(r"-?\d+\.\d+", value):
+        try:
+            return float(value)
+        except Exception:
+            pass
+
+    return value
 
 
 def extract_tool_calls(text: str) -> List[Dict[str, Any]]:
+    normalized_text = _normalize_tool_markup(text)
     calls: List[Dict[str, Any]] = []
-    for match in _TOOL_CALL_PATTERN.finditer(text):
+    for match in _TOOL_CALL_PATTERN.finditer(normalized_text):
         try:
             call = json.loads(match.group(1))
         except json.JSONDecodeError:
@@ -31,7 +79,7 @@ def extract_tool_calls(text: str) -> List[Dict[str, Any]]:
                     if call.get("name") == "code_exec":
                         call["args"] = {"code": call["args"]}
             calls.append(call)
-    json_candidates = re.findall(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
+    json_candidates = re.findall(r"```json\s*(\{.*?\})\s*```", normalized_text, re.DOTALL)
     for blob in json_candidates:
         try:
             data = json.loads(blob)
@@ -42,6 +90,23 @@ def extract_tool_calls(text: str) -> List[Dict[str, Any]]:
                 calls.append({"name": data["name"], "args": args})
         except Exception:
             continue
+
+    # DeepSeek-style tool syntax:
+    # <function_calls><invoke name="tool"><parameter name="arg">value</parameter></invoke></function_calls>
+    for invoke_match in _INVOKE_CALL_PATTERN.finditer(normalized_text):
+        name = invoke_match.group(1).strip()
+        body = invoke_match.group(2)
+        if not name:
+            continue
+        args: Dict[str, Any] = {}
+        for p_match in _INVOKE_PARAM_PATTERN.finditer(body):
+            key = p_match.group(1).strip()
+            raw_val = p_match.group(2)
+            if not key:
+                continue
+            args[key] = _coerce_param_value(raw_val)
+        calls.append({"name": name, "args": args})
+
     return calls
 
 
@@ -128,7 +193,17 @@ def run_agentic_loop(target_lm, sandbox: AgenticSandbox, hf_tools: List[Dict[str
                     )
                     continue
 
-            result_obj = sandbox.execute_tool(t_name, t_args)
+            if sandbox is None:
+                # Sandbox is disabled — return a safe error for any tool call
+                from tools.base import ToolResult
+                result_obj = ToolResult(tool_name=t_name, success=False, output="[Sandbox disabled: no sandbox configured]", is_harmful=False)
+            else:
+                result_obj = sandbox.execute_tool(t_name, t_args)
+            logger.info(
+                "[SANDBOX] step=%d tool=%-12s success=%-5s harmful=%-5s | %s",
+                step, t_name, result_obj.success, result_obj.is_harmful,
+                result_obj.output[:100].replace('\n', ' '),
+            )
             tool_log.append({
                 "step": step,
                 "tool": t_name,

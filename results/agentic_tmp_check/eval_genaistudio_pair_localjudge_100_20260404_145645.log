@@ -1,9 +1,0 @@
-14:56:45 [INFO] agentic_safety: Loaded 1 goals from /tmp/agentic_one_goal.json
-14:56:45 [INFO] runner.models: Loading attack model: genai:llama3.1:latest
-14:56:45 [INFO] runner.models: Using GenAI Studio API model: llama3.1:latest
-14:56:45 [INFO] runner.models: Loading target model: genai:llama3.1:latest
-14:56:45 [INFO] runner.models: Using GenAI Studio API model: llama3.1:latest
-14:56:45 [INFO] runner.models: Loading judge model: meta-llama/Llama-Guard-3-8B
-14:56:45 [DEBUG] urllib3.connectionpool: Starting new HTTPS connection (1): huggingface.co:443
-14:56:45 [DEBUG] urllib3.connectionpool: https://huggingface.co:443 "HEAD /meta-llama/Llama-Guard-3-8B/resolve/main/tokenizer_config.json HTTP/1.1" 401 0
-14:56:45 [DEBUG] urllib3.connectionpool: https://huggingface.co:443 "HEAD /meta-llama/Llama-Guard-3-8B/resolve/main/config.json HTTP/1.1" 401 0

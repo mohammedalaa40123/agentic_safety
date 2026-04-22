@@ -56,6 +56,7 @@ class ExperimentRecord:
     defense_response: Optional[str] = None
     
     stages: List[Dict[str, Any]] = field(default_factory=list)
+    gcg_suffix: Optional[str] = None
     timestamp: float = field(default_factory=time.time)
 
     def as_clean_dict(self) -> Dict[str, Any]:
@@ -76,6 +77,10 @@ class ExperimentRecord:
             if k in ["defense_name", "defense_bypassed", "defense_response"]:
                 if not self.defense_name:
                     continue
+
+            # Omit gcg_suffix when not a GCG run
+            if k == "gcg_suffix" and not v:
+                continue
             
             clean_d[k] = v
             
@@ -151,6 +156,7 @@ class MetricsCollector:
             jailbreak_prompt=getattr(result, "jailbreak_prompt", "") or "",
             jailbreak_response=jailbreak_resp[:500] if jailbreak_resp else None,
             stages=getattr(result, "stages", []),
+            gcg_suffix=getattr(result, "gcg_suffix", None) or None,
         )
         self.records.append(rec)
 

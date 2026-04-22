@@ -1,3 +1,14 @@
+---
+title: Agentic Safety Evaluator
+emoji: 🛡️
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+private: true
+---
+
 # Agentic Safety Evaluation Framework
 
 A modular harness to run jailbreak attacks, baselines, and tool-augmented agent checks with optional defenses. The entrypoint is [run.py](run.py), backed by the small runner helpers in `runner/` (config, logging, models, attacks, defenses, sandbox, agentic loop).

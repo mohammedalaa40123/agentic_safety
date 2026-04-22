@@ -5,7 +5,10 @@ do not pull optional heavy dependencies (for example torch from prompt_fusion)
 at interpreter startup.
 """
 
-__all__ = ["PromptFusionEngine", "CrescendoAttack", "HybridAttackLoop"]
+__all__ = [
+	"PromptFusionEngine", "CrescendoAttack", "HybridAttackLoop",
+	"STACAttack", "AdapToolsAttack",
+]
 
 
 def __getattr__(name):
@@ -21,4 +24,12 @@ def __getattr__(name):
 		from .hybrid_loop import HybridAttackLoop as _HybridAttackLoop
 
 		return _HybridAttackLoop
+	if name == "STACAttack":
+		from .stac import STACAttack as _STACAttack
+
+		return _STACAttack
+	if name == "AdapToolsAttack":
+		from .adaptools import AdapToolsAttack as _AdapToolsAttack
+
+		return _AdapToolsAttack
 	raise AttributeError(f"module 'attacks' has no attribute {name!r}")

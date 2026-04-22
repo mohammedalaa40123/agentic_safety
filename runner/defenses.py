@@ -37,9 +37,7 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
 
         jbs_cfg = cfg.jbshield or {}
         registry.add(JBShieldDefense(
-            n_mutations=jbs_cfg.get("n_mutations", 5),
-            divergence_threshold=jbs_cfg.get("divergence_threshold", jbs_cfg.get("refusal_threshold", 0.6)),
-            target_fn=target_fn,
+            threshold=jbs_cfg.get("threshold", jbs_cfg.get("divergence_threshold", jbs_cfg.get("refusal_threshold", 0.0))),
         ))
 
     if "gradient_cuff" in cfg.active:
@@ -47,9 +45,10 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
 
         gc_cfg = cfg.gradient_cuff or {}
         registry.add(GradientCuffDefense(
+            model_fn=target_fn,
             model=target_model,
             tokenizer=target_tokenizer,
-            threshold=gc_cfg.get("threshold", 10.0),
+            grad_norm_threshold=gc_cfg.get("grad_norm_threshold", gc_cfg.get("threshold", 50.0)),
         ))
 
     if "progent" in cfg.active:
@@ -73,6 +72,19 @@ def build_defense_registry(cfg: DefenseConfig, target_fn: Optional[Callable[[str
         ss_cfg = cfg.stepshield or {}
         registry.add(StepShieldDefense(
             harm_threshold=ss_cfg.get("harm_threshold", 0.7),
+        ))
+
+    if "contextguard" in cfg.active:
+        from defenses.contextguard import ContextGuardDefense
+
+        cg_cfg = cfg.contextguard or {}
+        # Use the target_fn (judge/extractor LLM) passed into build_defense_registry
+        extractor = target_fn if target_fn is not None else (lambda p: "")
+        registry.add(ContextGuardDefense(
+            extractor_fn=extractor,
+            deny_patterns=cg_cfg.get("deny_patterns") or None,
+            block_high_risk=cg_cfg.get("block_high_risk", True),
+            model_name=cg_cfg.get("model_name", "contextguard-extractor"),
         ))
 
     return registry

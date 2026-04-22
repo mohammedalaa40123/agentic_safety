@@ -10,3 +10,11 @@ wheels/
 .venv
 models/
 wandb/
+frontend/node_modules/
+results/
+agentic_experiments_v2_500 copy/
+Agentic Fingerprints： Visualize Every Step of an AI Attack ｜ CalypsoAI.mp4
+.env
+plan.md
+literature/literature_map.md
+eval_plan.md

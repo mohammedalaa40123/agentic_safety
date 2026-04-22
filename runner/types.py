@@ -20,3 +20,4 @@ class AttackOutcome:
     wrong_tool_calls: int = 0
     stages: List[Dict[str, Any]] = field(default_factory=list)
     defense_response: Optional[str] = None
+    gcg_suffix: Optional[str] = None

@@ -1,0 +1,55 @@
+experiment_name: eval_deepseek_attacker_pair15
+description: >
+  PAIR with DeepSeek-v3.2 attacker (strong reasoning),
+  Qwen3.5-397B target, Gemma4-31B judge, 15 iterations.
+mode: attack
+output_dir: results/agentic_experiments_deepseek_attacker_pair15
+goals_path: data/owasp_agentic_top10_jailbreaks_100.json
+
+models:
+  attack_model: genai:deepseek-v3.2:cloud
+  target_model: genai:qwen3.5:397b-cloud
+  judge_model: genai:deepseek-v3.2:cloud
+  attack_max_n_tokens: 1024
+  target_max_n_tokens: 1024
+  judge_max_n_tokens: 512
+  attack_calls_per_minute: 20
+  target_calls_per_minute: 20
+  judge_calls_per_minute: 20
+
+sandbox:
+  enabled: true
+  sandbox_root: /tmp/agentic_sandbox
+  tools: [file_io, code_exec, web_browse, network]
+  code_timeout: 10
+  code_exec_backend: bwrap
+  code_exec_require_isolation: false
+  web_timeout: 10
+  net_sandbox: true
+  web_sandbox: true
+  max_steps: 5
+
+attacks:
+  - name: pair
+    enabled: true
+    n_iterations: 5
+    stop_on_success: true
+  - name: crescendo
+    enabled: false
+  - name: gcg
+    enabled: false
+  - name: prompt_fusion
+    enabled: false
+
+baseline:
+  enabled: false
+
+defenses:
+  enabled: false
+  active: []
+
+wandb:
+  enabled: false
+
+logging:
+  verbose: true

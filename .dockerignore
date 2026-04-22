@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+.env
+*.env
+
+# Frontend source (only built dist is needed)
+frontend/node_modules/
+frontend/.vite/
+
+# Test + dev artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+*.egg-info/
+dist/
+build/
+
+# Data & results (too large, mount at runtime)
+results/
+wandb/
+
+# Editor
+.vscode/
+.idea/
+*.swp

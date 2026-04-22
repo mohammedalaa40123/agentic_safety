@@ -51,13 +51,18 @@ class DefenseRegistry:
     def list_defenses(self) -> List[str]:
         return list(self._defenses.keys())
 
+    @property
+    def defenses(self) -> Dict[str, "DefenseBase"]:
+        """Read-only view of all registered defenses."""
+        return dict(self._defenses)
+
     def filter_prompt(self, prompt: str, **kwargs) -> DefenseResult:
         """
         Run all input-level and gradient-level defenses on the prompt.
         Returns the first blocking result, or a pass-through if none block.
         """
         for name, defense in self._defenses.items():
-            if defense.defense_layer in ("input", "gradient", "multi-layer"):
+            if defense.defense_layer in ("input", "gradient", "multi-layer", "representation"):
                 result = defense.filter_prompt(prompt, **kwargs)
                 if result.blocked:
                     logger.info(f"Prompt blocked by {name}: {result.reason}")
@@ -122,7 +127,7 @@ class DefenseRegistry:
         """
         results = []
         for name, defense in self._defenses.items():
-            if defense.defense_layer in ("input", "gradient", "multi-layer"):
+            if defense.defense_layer in ("input", "gradient", "multi-layer", "representation"):
                 results.append(defense.filter_prompt(prompt, **kwargs))
             if response and defense.defense_layer in ("output", "multi-layer"):
                 results.append(

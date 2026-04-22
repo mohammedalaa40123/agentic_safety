@@ -9,19 +9,47 @@ from tools.web_browse import WebBrowseTool
 from tools.network_tool import NetworkTool
 
 from .config import SandboxConfig
+from .sandbox_init import init_sandbox_fixtures, reset_sandbox_fixtures
 
 logger = logging.getLogger(__name__)
 
+# Module-level cache: sandbox_root → (AgenticSandbox, hf_tools)
+# Populated on the first call when persistent=True; subsequent calls return
+# the same objects so the filesystem state is kept alive across goals/attacks.
+_SANDBOX_CACHE: Dict[str, Tuple[Any, List[Dict[str, Any]]]] = {}
+
 
 def build_sandbox_components(cfg: SandboxConfig) -> Tuple[Any, List[Dict[str, Any]]]:
-    """Construct the sandbox and HF tool descriptors from config."""
+    """Construct the sandbox and HF tool descriptors from config.
+
+    When ``cfg.persistent`` is True (the default) the sandbox directory is
+    initialised with fixture files exactly once and the same
+    ``AgenticSandbox`` instance is returned on every subsequent call — no
+    Docker restart, no directory wipe between goals.
+
+    When ``cfg.persistent`` is False a fresh sandbox is built every call
+    (original behaviour, useful for isolation testing).
+    """
     if not cfg.enabled:
         return None, []
 
+    sandbox_root = cfg.sandbox_root
+
+    # ── persistent mode: return cached instance if already built ──────────
+    if cfg.persistent and sandbox_root in _SANDBOX_CACHE:
+        return _SANDBOX_CACHE[sandbox_root]
+
+    # ── initialise fixture files once ─────────────────────────────────────
+    if cfg.persistent:
+        init_sandbox_fixtures(sandbox_root)
+    else:
+        # Non-persistent: always start fresh
+        reset_sandbox_fixtures(sandbox_root)
+
+    # ── build tool objects ─────────────────────────────────────────────────
     tools = []
     hf_tools: List[Dict[str, Any]] = []
     enabled_tools = cfg.tools or ["file_io", "code_exec", "web_browse", "network"]
-    sandbox_root = cfg.sandbox_root
 
     if "file_io" in enabled_tools:
         tools.append(FileIOTool(sandbox_root=sandbox_root))
@@ -104,4 +132,12 @@ def build_sandbox_components(cfg: SandboxConfig) -> Tuple[Any, List[Dict[str, An
             },
         })
 
-    return AgenticSandbox(tools=tools), hf_tools
+    tool_names = [t.name for t in tools]
+    result = AgenticSandbox(tools=tools), hf_tools
+    logger.info("[SANDBOX] Initialized — registered tools: %s (persistent=%s)", tool_names, cfg.persistent)
+
+    if cfg.persistent:
+        _SANDBOX_CACHE[sandbox_root] = result
+
+    return result
+

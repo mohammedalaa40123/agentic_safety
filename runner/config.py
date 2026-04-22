@@ -29,13 +29,17 @@ class SandboxConfig:
     net_sandbox: bool = True
     web_sandbox: bool = True
     max_steps: int = 5
+    # When True (default) the sandbox directory and fixture files are created
+    # once and kept alive for the entire run — no re-init between goals or
+    # attacks.  Set to False to get a fresh sandbox per goal (slower).
+    persistent: bool = True
 
 
 @dataclass
 class AttackSpec:
     name: str
     enabled: bool = True
-    stop_on_success: bool = True
+    stop_on_success: bool = False
     params: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -48,6 +52,7 @@ class DefenseConfig:
     gradient_cuff: Dict[str, Any] = field(default_factory=dict)
     progent: Dict[str, Any] = field(default_factory=dict)
     stepshield: Dict[str, Any] = field(default_factory=dict)
+    contextguard: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -105,7 +110,7 @@ def _coerce_attack_list(raw: Any) -> List[AttackSpec]:
             AttackSpec(
                 name=name,
                 enabled=entry.get("enabled", True),
-                stop_on_success=entry.get("stop_on_success", True),
+                stop_on_success=entry.get("stop_on_success", False),
                 params=params,
             )
         )
@@ -200,12 +205,19 @@ def load_config(path: str) -> RunConfig:
         net_sandbox=sandbox.get("net_sandbox", cfg.sandbox.net_sandbox),
         web_sandbox=sandbox.get("web_sandbox", cfg.sandbox.web_sandbox),
         max_steps=sandbox.get("max_steps", cfg.sandbox.max_steps),
+        persistent=sandbox.get("persistent", cfg.sandbox.persistent),
     )
 
     cfg.attacks = _coerce_attack_list(data.get("attacks"))
     cfg.baseline = BaselineConfig(enabled=data.get("baseline", {}).get("enabled", cfg.baseline.enabled))
 
-    defenses = data.get("defenses", {})
+    defenses_raw = data.get("defenses", {})
+    if isinstance(defenses_raw, list):
+        defenses = {"enabled": bool(defenses_raw), "active": defenses_raw}
+    elif isinstance(defenses_raw, dict):
+        defenses = defenses_raw
+    else:
+        defenses = {}
     cfg.defenses = DefenseConfig(
         enabled=defenses.get("enabled", cfg.defenses.enabled),
         active=defenses.get("active", cfg.defenses.active),

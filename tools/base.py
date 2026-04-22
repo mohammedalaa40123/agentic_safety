@@ -67,9 +67,25 @@ _HARMFUL_FILE_PATTERNS = [
 ]
 
 _HARMFUL_CODE_PATTERNS = [
-    r"subprocess\.", r"os\.system", r"eval\(",
-    r"exec\(", r"shutil\.rmtree", r"rm\s+-rf",
-    r"import\s+socket", r"import\s+requests",
+    # Execution / shell
+    r"subprocess\.",
+    r"os\.system\s*\(",
+    r"\beval\s*\(",
+    r"\bexec\s*\(",
+    r"shutil\.rmtree",
+    r"rm\s+-rf",
+    # Network *usage* (not bare imports — socket.connect/send/recv, requests.get/post)
+    r"socket\s*\.\s*(connect|send|recv|bind|listen|accept)\s*\(",
+    r"requests\s*\.\s*(get|post|put|delete|patch|head)\s*\(",
+    r"urllib.*urlopen\s*\(",
+    r"http\.client\.",
+    # Sensitive file *access* inside code (open("/etc/shadow"), open("/etc/passwd"))
+    r"open\s*\(\s*['\"]\/etc\/(shadow|passwd|sudoers)",
+    r"open\s*\(\s*['\"].*\.(env|pem|key|crt)['\"]",
+    # Exfiltration patterns
+    r"base64\.(b64encode|encodebytes)\s*\(.*open\s*\(",
+    r"attacker",
+    r"exfil",
 ]
 
 _HARMFUL_URL_PATTERNS = [
