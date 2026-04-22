@@ -1,5 +1,8 @@
 site_name: Agentic Safety Evaluation Framework
-site_description: Comprehensive documentation for the agentic jailbreak evaluation framework
+site_description: >-
+  Research documentation for agentic jailbreak attack evaluation —
+  covering the PAIR mini-benchmark, OWASP AAI threat taxonomy,
+  attack and defense methods, metrics definitions, and reproducibility guidance.
 site_url: https://mohammedalaa40123.github.io/agentic_safety/
 repo_url: https://github.com/mohammedalaa40123/agentic_safety
 repo_name: GitHub
@@ -16,19 +19,29 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.indexes
     - toc.follow
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.code.annotate
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: teal
-      accent: amber
+      primary: indigo
+      accent: deep-purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: teal
-      accent: amber
+      primary: indigo
+      accent: deep-purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
 
 plugins:
   - search
@@ -38,6 +51,7 @@ markdown_extensions:
   - attr_list
   - def_list
   - tables
+  - md_in_html
   - toc:
       permalink: true
   - pymdownx.details
@@ -46,6 +60,14 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
@@ -54,29 +76,56 @@ extra_javascript:
 extra_css:
   - stylesheets/extra.css
 
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/mohammedalaa40123/agentic_safety
+      name: GitHub Repository
+    - icon: fontawesome/solid/database
+      link: https://huggingface.co/datasets/Mo-alaa/agentic-safety-results
+      name: Results Dataset
+
 nav:
   - Home: index.md
+  - Threat Model:
+      - Overview: threat-model/index.md
+      - OWASP AAI Top-10: threat-model/owasp-aai.md
+      - Attack Surfaces: threat-model/attack-surfaces.md
+  - Attacks:
+      - Overview: attacks/index.md
+      - PAIR: attacks/pair.md
+      - Crescendo: attacks/crescendo.md
+      - Prompt Fusion: attacks/prompt-fusion.md
+      - Hybrid Orchestration: attacks/hybrid.md
+  - Defenses:
+      - Overview: defenses/index.md
+      - JBShield: defenses/jbshield.md
+      - Gradient Cuff: defenses/gradient-cuff.md
+      - Progent: defenses/progent.md
+      - StepShield: defenses/stepshield.md
+  - Evaluation:
+      - Benchmark Methodology: evaluation/index.md
+      - Metrics (ASR/TIR/DBR/QTJ): evaluation/metrics.md
+      - Results & Leaderboard: evaluation/results.md
+      - Reproducibility: evaluation/reproducibility.md
+  - Providers:
+      - Overview: providers/index.md
+      - OpenAI & Gemini: providers/cloud.md
+      - Ollama & Local: providers/local.md
+      - RCAC HPC: providers/rcac.md
   - Getting Started:
-      - Project Overview: getting-started/overview.md
       - Quickstart: getting-started/quickstart.md
       - Configuration: getting-started/configuration.md
+      - Project Overview: getting-started/overview.md
   - Architecture:
       - System Overview: architecture/system-overview.md
       - Execution Flows: architecture/execution-flows.md
       - Threat and Defense: architecture/threat-defense.md
-  - Components:
-      - run.py Entrypoint: components/run-entrypoint.md
-      - runner Package: components/runner-package.md
-      - attacks Package: components/attacks-package.md
-      - defenses Package: components/defenses-package.md
-      - tools Package: components/tools-package.md
-      - metrics Package: components/metrics-package.md
-      - configs and data: components/configs-data.md
-  - Operations:
-      - Running Experiments: operations/experiments.md
-      - Sandbox Isolation: operations/sandboxing.md
-      - Publishing to GitHub Pages: operations/github-pages.md
-      - Deploy to Hugging Face Spaces: operations/hf-space-launch.md
+  - Deployment:
+      - GitHub Pages: deployment/github-pages.md
+      - Hugging Face Space: deployment/hf-space-launch.md
+      - Running Experiments: deployment/experiments.md
+      - Sandbox Isolation: deployment/sandboxing.md
   - Reference:
       - Directory Map: reference/directory-map.md
       - File Inventory: reference/file-inventory.md
