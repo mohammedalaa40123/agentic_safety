@@ -57,9 +57,15 @@ This framework provides:
 
 ## ▶ Try It: Hugging Face Space
 
-> **The easiest way to explore results, run new experiments, and view per-goal fingerprints.**
+> **Highly Recommended:** Please use the Hugging Face Space to safely test the framework, launch evaluations, and view results. It is the easiest way to explore results, run new experiments, and view per-goal fingerprints directly in your browser without local environment setup.
 
 **→ [https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval](https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval)**
+
+**Important Evaluator Notes:**
+* Some providers like OpenAI and Anthropic (Claude) haven't yet been extensively tested out of the box because the author did not have active API keys available during development.
+* If you are using the Gemini free-tier API, please restrict your usage to evaluating `gemma3` models on only one sample per run to avoid immediate rate limiting.
+* Due to temporary maintenance on the RCAC GenAI studio during development, not all experimental permutations could be fully evaluated on that specific platform.
+* The GCG (Greedy Coordinate Gradient) attack currently cannot be executed dynamically from the Hugging Face Space and must be run locally.
 
 ### Getting started in the Space
 
@@ -140,6 +146,8 @@ Attack surfaces: **prompt injection**, **multi-turn manipulation**, **tool misus
 ---
 
 ## Quick Start
+
+> **Note on local setup difficulties:** The agentic evaluator relies on deep Python dependencies and specialized Linux sandboxing (`bubblewrap`/Docker) which may face compatibility issues depending on your host operating system (e.g., native Windows or macOS). If you face *any* issues setting the code up locally, it is highly recommended to test via the HF Space or directly **clone the Hugging Face Space** repository.
 
 ```bash
 # 1. Clone and install

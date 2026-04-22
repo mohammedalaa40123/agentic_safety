@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage[T1]{fontenc}
 \usepackage{iclr2026_conference,times}
 
 \usepackage{hyperref}
@@ -40,28 +41,28 @@ Purdue University, West Lafayette, IN 47907, USA \\
 Large language model (LLM) agents that plan, call external tools, and execute
 code across multiple steps expose qualitatively new attack surfaces that
 single-turn jailbreak benchmarks fail to capture.  This work presents the
-\textbf{Agentic Safety Evaluator}, an open-source, modular benchmarking
+Agentic Safety Evaluator, an open-source, modular benchmarking
 framework for systematically evaluating adversarial jailbreak attacks on
 tool-using LLM agents.  The framework implements and evaluates two automated
 attack strategies---PAIR~\citep{chao2023pair} (iterative prompt refinement) and
 Crescendo~\citep{russinovich2024crescendo} (multi-turn escalation)---against
 nine target models executed inside a sandboxed tool-use pipeline with
 \texttt{file\_io}, \texttt{network}, \texttt{code\_exec}, and
-\texttt{web\_browse} capabilities.  This study evaluates \textbf{3,462 attack trials}
+\texttt{web\_browse} capabilities.  This study evaluates 3,462 attack trials
 spanning nine models and three attack methods, measuring Malicious Intent Rate
 (MIR), Queries-to-Jailbreak (QTJ), Tool Invocation Rate (TIR), and
 per-category vulnerability distributions mapped to the OWASP Agentic AI
 Top-10 taxonomy~\citep{owasp2025}.  Key findings include: (1)~reasoning-optimised
-models (DeepSeek-R1-70B, 87.0\% MIR) are \emph{more} susceptible to PAIR than
+models (DeepSeek-R1-70B, 87.0\% MIR) are more susceptible to PAIR than
 instruction-tuned counterparts; (2)~Crescendo achieves 100\% MIR on Llama-3.3-70B
 versus 84.2\% for PAIR, underscoring the danger of multi-turn escalation; and
 (3)~Qwen3-30B effectively resists all PAIR attacks (0\% MIR), demonstrating
 that safety alignment can remain robust under iterative adversarial pressure.
 The framework, datasets, interactive leaderboard, and all experimental result
 artifacts are publicly available, and the project is continuously open for community contributions.
-\href{https://github.com/mohammedalaa40123/agentic_safety}{\textbf{[Code]}}
-\href{https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval}{\textbf{[Demo]}}
-\href{https://mohammedalaa40123.github.io/agentic_safety/}{\textbf{[Docs]}}
+\href{https://github.com/mohammedalaa40123/agentic_safety}{[Code]}
+\href{https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval}{[Demo]}
+\href{https://mohammedalaa40123.github.io/agentic_safety/}{[Docs]}
 \end{abstract}
 
 % =============================================================================
@@ -72,7 +73,7 @@ The rapid, widespread deployment of large language models in agentic systems tha
 autonomously plan, call external tools, browse the web, and execute code, has
 fundamentally expanded the attack surface available to adversarial actors.
 Unlike single-turn chatbot interactions, agentic pipelines introduce
-\emph{multi-step} decision chains that are qualitatively harder to harden: a
+multi-step decision chains that are qualitatively harder to harden: a
 jailbreak at any step can cascade into harmful tool invocations such as reading
 privileged system files, exfiltrating sensitive data, or executing malicious
 code~\citep{kim2026agentic}.  The OWASP Agentic AI Top-10~\citep{owasp2025}
@@ -82,16 +83,16 @@ exfiltration, yet systematic evaluation frameworks remain scarce.
 
 Existing jailbreak benchmarks~\citep{chao2023pair,zou2023gcg,mafra2024harmbench}
 predominantly target single-turn chat completions and report a binary attack
-success rate without measuring the \emph{downstream impact} on tool execution.
+success rate without measuring the downstream impact on tool execution.
 This gap is significant: a model that verbally ``agrees'' to a harmful request
 may still refuse to execute the corresponding tool call, while a model that
 appears to refuse may inadvertently trigger harmful actions through malformed
 tool parameters.
 
-This work addresses this gap with the \textbf{Agentic Safety Evaluator}, a modular,
+This work addresses this gap with the Agentic Safety Evaluator, a modular,
 reproducible benchmarking harness that evaluates jailbreak attacks across the
-full agentic pipeline, \emph{from initial adversarial prompt to concrete tool
-execution}. The core contributions of this work are fourfold:
+full agentic pipeline, from initial adversarial prompt to concrete tool
+execution. The core contributions of this work are fourfold:
 
 \begin{enumerate}[nosep,leftmargin=*]
     \item An open-source, provider-agnostic framework for systematically testing attacks and defenses on agentic LLMs, capable of seamlessly swapping disparate models, judges, and vulnerability profiles.
@@ -103,7 +104,7 @@ execution}. The core contributions of this work are fourfold:
 Across 9~target models, 3~attack methods, and 3,462~total trials, this framework finds
 substantial variation in model vulnerability, with MIR ranging from 0\%
 (Qwen3-30B under PAIR) to 100\% (Llama-3.3-70B under Crescendo).  These
-results underscore the need for attack-specific \emph{and}
+results underscore the need for attack-specific and
 model-architecture-specific safety evaluation in the agentic regime.
 
 % =============================================================================
@@ -121,7 +122,7 @@ bypass safety filters.  \citet{wei2024jailbroken} provide a theoretical
 analysis of failure modes in RLHF safety training.  Red-teaming at scale has been studied by
 \citet{perez2022red} and \citet{mafra2024harmbench}, who introduce standard
 evaluation frameworks.  This work extends PAIR and Crescendo to the agentic setting, 
-where success is measured not merely by text compliance but by \emph{actual tool execution}.
+where success is measured not merely by text compliance but by actual tool execution.
 
 \subsection{Agentic-specific threats.}
 Recent work characterises threats unique to agentic systems.  STAC
@@ -148,15 +149,15 @@ implements these four defenses as composable, independently activatable modules.
 \subsection{Framework Architecture}
 
 Figure~\ref{fig:architecture} illustrates the evaluation pipeline.  Each trial
-begins with a \emph{goal} drawn from the curated dataset (e.g., ``Read
+begins with a goal drawn from the curated dataset (e.g., ``Read
 \texttt{/etc/shadow}'').  An
-\textbf{attacker LLM} generates adversarial prompts, which are delivered to a
-\textbf{target LLM} operating with access to a sandboxed tool-use environment.
-A \textbf{judge LLM} (Llama-3.3-70B) evaluates each
+attacker LLM generates adversarial prompts, which are delivered to a
+target LLM operating with access to a sandboxed tool-use environment.
+A judge LLM (Llama-3.3-70B) evaluates each
 target response on a 1--10 scale, where scores $\geq 7$ constitute a confirmed
 jailbreak.  
 
-It is critical to stress that a successful jailbreak in this framework is \emph{not} determined solely by the malicious tool call executing and causing damage. Rather, the metrics and sandbox measure the model's \emph{intention} to call malicious tools, accurately simulating the compromise of agentic alignment regardless of network blocking.
+It is critical to stress that a successful jailbreak in this framework is not determined solely by the malicious tool call executing and causing damage. Rather, the metrics and sandbox measure the model's intention to call malicious tools, accurately simulating the compromise of agentic alignment regardless of network blocking.
 
 % ── arch figure placeholder ──────────────────────────────────────────────────
 \begin{figure}[tp]
@@ -167,7 +168,7 @@ An attacker LLM iteratively crafts adversarial prompts against a target LLM
 operating inside a sandboxed tool environment.  A judge LLM scores each
 response.  Three composable defense layers (prompt, response, tool-policy) can
 be selectively activated.  All tool calls execute inside Docker or \texttt{bwrap}
-sandboxes with no access to real system resources.}
+sandboxes with no access to real system resources. (Figure Generated By Gemini 3 Pro)}
 \label{fig:architecture}
 \end{figure}
 % ─────────────────────────────────────────────────────────────────────────────
@@ -219,9 +220,8 @@ This approach extracts five complementary metrics, providing a heavily structure
 \textbf{Metric} & \textbf{Description} \\
 \midrule
 \textbf{MIR} & \textbf{Malicious Intent Rate:} The fraction of malicious goals where the judge scores $\geq \tau$. Evaluates the probability of compromising core alignment. \\
-\textbf{QTJ} & \textbf{Queries to Jailbreak:} The mean number of attacker queries over \emph{successful} jailbreaks only. Lower QTJ indicates the model was compromised far more quickly. \\
+\textbf{QTJ} & \textbf{Queries to Jailbreak:} The mean number of attacker queries over successful jailbreaks only. Lower QTJ indicates the model was compromised far more quickly. \\
 \textbf{TIR} & \textbf{Tool Invocation Rate:} The fraction of total tool calls classified as harmful. Measures execution-level intent beyond text-only compliance. \\
-\textbf{DBR} & \textbf{Defense Bypass Rate:} The fraction of defended attacks where the applied defense mechanism was functionally bypassed. \\
 \textbf{Correctness} & The ratio of tool calls that correctly implement the intended adversarial action versus syntactically valid but semantically misaligned calls. \\
 \bottomrule
 \end{tabularx}
@@ -237,7 +237,7 @@ The study evaluates 9~target models spanning four families and three parameter
 tiers (1.7B--70B), covering the Llama-3 family, DeepSeek-R1 reasoning models, Qwen3, and DeepSeek-V3 general purpose models. All PAIR trials use a maximum of
 $K=5$ iterations; all Crescendo trials use up to 20 conversational turns.  The
 judge model is Llama-3.3-70B. Experiments were conducted on Purdue RCAC HPC inference
-endpoints (\texttt{genai\_rcac} provider) and Open Source Ollama APIs, yielding a total of 3,462~trials.
+endpoints (\texttt{genai\_rcac} provider) and Open Source Ollama APIs, yielding a total of 3,462~trials. \emph{It should be noted that due to temporary maintenance in the RCAC GenAI Studio, not all experiments could be completed using the Crescendo attack method at the time of publication.}
 
 \subsection{Main Results}
 
@@ -245,7 +245,7 @@ Table~\ref{tab:main_results} presents the unified benchmarking performance.
 
 \begin{table}[h]
 \caption{Benchmark results for PAIR and Crescendo attacks across nine target
-models. QTJ is computed over \emph{successful} jailbreaks only.  TIR = harmful tool calls / total tool
+models. QTJ is computed over successful jailbreaks only.  TIR = harmful tool calls / total tool
 calls.  A dash (---) indicates insufficient successful samples.  Highest vulnerability metric results (highest MIR, lowest QTJ, highest TIR) per column are presented in \textbf{bold}.}
 \label{tab:main_results}
 \centering
@@ -306,7 +306,7 @@ The resulting metrics facilitate deep analytical insights, structured in Table~\
 \section{Conclusion}
 \label{sec:conclusion}
 
-This project introduces the \textbf{Agentic Safety Evaluator}, an open-source, extensible framework for
+This project introduces the Agentic Safety Evaluator, an open-source, extensible framework for
 evaluating jailbreak attacks on tool-using LLM agents. The primary contribution
 is a comprehensive benchmarking harness that closes the gap between text-level jailbreak
 evaluation and concrete tool-execution impact measurement. Crucially, this work
@@ -319,7 +319,7 @@ compliance. Furthermore, the repository natively supports community contribution
 The extensive experimental analysis of 3,462~trials across nine target models yields
 highly significant insights into the fundamental flaws of reasoning-chain optimizations and scale-dependent tool compliance risks. These findings carry direct implications for deploying autonomous LLM agents
 in security-critical domains: a model's robustness against single-turn
-jailbreaks acts as a \emph{poor predictor} for its resistance against multi-turn
+jailbreaks acts as a poor predictor for its resistance against multi-turn
 agentic attacks. Tool-level misuse metrics must strictly complement compliance scoring in any responsible model deployment regime.
 
 \paragraph{Future work.}
@@ -335,17 +335,18 @@ All adversarial evaluation scenarios use deliberately unrealistic goals
 involving dummy targets.  No real systems, networks, or data are
 accessed during evaluation.  All tool executions occur exclusively inside
 Docker/\texttt{bwrap} sandboxes with no connectivity to the internet or to
-production systems.  The dataset is designed to measure model \emph{intent}
+production systems.  The dataset is designed to measure model intent
 and does not provide instructions for real-world attacks.  The authors follow
 responsible disclosure practices and release this framework to support
 red-teaming research that improves the safety of deployed LLM agents.
 
 \subsubsection*{LLM Acknowledgement}
 
-LLM assistance (Claude Sonnet 4.6, Codex GPT-5.4) was used for:
-(1)~code scaffolding for the evaluation framework;
-(2)~documentation editing;
-(3)~LaTeX writing formatting for this report.
+LLM assistance (Claude Sonnet 4.6, Codex GPT-5.4, Gemini 3 Pro) was used for:
+(1)~code scaffolding for the evaluation framework, as the entire project is centered around evaluating LLM safety;
+(2)~generating the adversarial dataset of evaluation goals;
+(3)~serving as an automated judge to evaluate attacks and score target model responses;
+(4)~documentation editing and LaTeX formatting for this report.
 All experimental design, methodology decisions, result analysis, and conclusions
 are strictly the work of the author.
 
@@ -457,6 +458,9 @@ fusing the semantic abstractions:
 \section{Extended Datasets and Metrics}
 \label{app:results}
 
+\subsection{Defense Bypass Rate (DBR)}
+While Malicious Intent Rate (MIR) assesses base framework compliance vulnerability, the Defense Bypass Rate (DBR) is defined within the codebase as the fraction of defended attacks where the applied defense mechanism was functionally bypassed or defeated. This ensures malicious tool execution is recorded accurately across guardrails. As noted in the conclusion, full-scale defense matrices profiling DBR specifically operate as planned future work.
+
 Figure \ref{fig:MIR_category} presents structural distribution insights regarding the internal vulnerabilities across discrete categories. The graphs are highly pronounced regarding reasoning flaws.
 
 \begin{figure}[h]
@@ -481,6 +485,18 @@ Figure \ref{fig:MIR_category} presents structural distribution insights regardin
 \vspace{0.5cm}
 \caption{Robust quantitative analysis outlining discrete syntactic verification versus semantic alignment mapping algorithms. Heavily constrained smaller models typically display increased syntactical manipulation drift indicating misaligned intent variables.}
 \label{fig:tool_quality}
+\end{figure}
+
+\subsection{Attack Fingerprint Visualization}
+
+To provide a concrete visual trace of the attack mechanics within the agentic environment, Figure \ref{fig:attack_fingerprint} illustrates an example of an \textbf{Attack Fingerprint}. This node graph explicitly maps a successful prompt fusion jailbreak sequence, detailing the interaction loop between the Attacker, Target, Sandbox environment, and the final Judge evaluation.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/fingerprint.jpg}
+\vspace{0.2cm}
+\caption{An Attack Fingerprint node graph mapping a successful continuous Prompt Fusion attack sequence. The target model acts on the adversarial injected fused prompt, interacting iteratively with the \texttt{web\_browse} and \texttt{code\_exec} tools within the sandbox before the autonomous Judge validates successful exploitation.}
+\label{fig:attack_fingerprint}
 \end{figure}
 
 \end{document}
