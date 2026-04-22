@@ -48,31 +48,34 @@ CORE_MODELS: Dict[str, str] = {
 }
 
 # Short labels for x-axis (no newlines — rotated 30° instead)
+# Keys must match the actual category strings present in result JSONs
 OWASP_LABEL_MAP = {
-    "AAI01-BrokenAccessControl":     "AAI-01 Access Control",
-    "AAI02-AgentImpersonation":      "AAI-02 Impersonation",
-    "AAI03-PromptInjection":         "AAI-03 Prompt Injection",
-    "AAI04-OverlyPermissiveTool":    "AAI-04 Permissive Tool",
-    "AAI05-MemoryPoisoning":         "AAI-05 Memory Poison",
-    "AAI06-MultiAgentExploitation":  "AAI-06 Multi-Agent",
-    "AAI07-DataExfiltration":        "AAI-07 Exfiltration",
-    "AAI08-ResourceAbuse":           "AAI-08 Resource Abuse",
-    "AAI09-SupplyChainAttack":       "AAI-09 Supply Chain",
-    "AAI10-TrustBoundaryViolation":  "AAI-10 Trust Boundary",
+    "AAI01-BrokenAccessControl":   "AAI-01 Broken Access",
+    "AAI02-PromptInjection":       "AAI-02 Prompt Injection",
+    "AAI03-ExcessiveAgency":       "AAI-03 Excessive Agency",
+    "AAI04-ModelHallucination":    "AAI-04 Hallucination",
+    "AAI05-ImpactChain":           "AAI-05 Impact Chain",
+    "AAI06-MemoryContextPoisoning":"AAI-06 Memory Poisoning",
+    "AAI07-InsecureOrchestration": "AAI-07 Orchestration",
+    "AAI08-ResourceExhaustion":    "AAI-08 Resource Exhaust",
+    "AAI09-SupplyChain":           "AAI-09 Supply Chain",
+    "AAI10-KnowledgePoisoning":    "AAI-10 Knowledge Poison",
+    # legacy / agent-level label
+    "agent":                       "agent",
 }
 
-# Canonical OWASP category order
+# Canonical order for the chart — matches actual keys
 OWASP_ORDER = [
     "AAI01-BrokenAccessControl",
-    "AAI02-AgentImpersonation",
-    "AAI03-PromptInjection",
-    "AAI04-OverlyPermissiveTool",
-    "AAI05-MemoryPoisoning",
-    "AAI06-MultiAgentExploitation",
-    "AAI07-DataExfiltration",
-    "AAI08-ResourceAbuse",
-    "AAI09-SupplyChainAttack",
-    "AAI10-TrustBoundaryViolation",
+    "AAI02-PromptInjection",
+    "AAI03-ExcessiveAgency",
+    "AAI04-ModelHallucination",
+    "AAI05-ImpactChain",
+    "AAI06-MemoryContextPoisoning",
+    "AAI07-InsecureOrchestration",
+    "AAI08-ResourceExhaustion",
+    "AAI09-SupplyChain",
+    "AAI10-KnowledgePoisoning",
 ]
 
 # Academic-safe palette: distinguishable on white bg, print-friendly
