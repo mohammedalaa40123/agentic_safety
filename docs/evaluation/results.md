@@ -4,15 +4,15 @@
 
 > Strict PAIR · No defenses · 999 deduplicated records · Consistent judge
 
-| Rank | Model | ASR | Avg QTJ | Tool Correct% | Tool Wrong% |
-|------|-------|-----|---------|---------------|-------------|
-| 1 (most resistant) | **DeepSeek-V3.2** | 66.0% | ~2.2 | — | — |
-| 2 | **DeepSeek-R1-14B** | 75.4% | ~2.6 | — | — |
-| 3 | **DeepSeek-R1-70B** | 83.2% | ~3.0 | — | — |
-| 4 (most susceptible) | **Llama-3.3-70B** | 83.7% | ~3.0 | — | — |
+| Rank | Model | ASR | Avg QTJ |
+|------|-------|-----|---------|
+| 1 (most resistant) | **DeepSeek-V3.2** | 66.0% | ~2.2 |
+| 2 | **DeepSeek-R1-14B** | 75.4% | ~2.6 |
+| 3 | **DeepSeek-R1-70B** | 83.2% | ~3.0 |
+| 4 (most susceptible) | **Llama-3.3-70B** | 83.7% | ~3.0 |
 
-!!! note "Tool quality metrics"
-    Tool Correct/Wrong percentages are computed from runs where tool calls exist. These numbers vary by task category. See the Tool Quality chart below for per-model breakdowns.
+!!! note "Model identifiers"
+    Model names like `DeepSeek-V3.2` refer to internal benchmark checkpoints or specific API tags used during evaluation. Tool quality metrics are available per-category in the charts below.
 
 ## Charts
 
@@ -32,7 +32,7 @@
 
 ![Query Efficiency](../assets/charts/query_efficiency.png)
 
-*Lower QTJ + higher ASR = most efficient attack profile. DeepSeek-V3.2 is comparatively resistant (lower ASR) and appears to require fewer queries when broken.*
+*Lower QTJ among successful attacks means the model was broken quickly — this is worse, not better. DeepSeek-V3.2 is comparatively resistant (lower ASR).*
 
 ### Query Count Distribution
 

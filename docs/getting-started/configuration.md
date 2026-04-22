@@ -78,5 +78,22 @@ defenses:
 
 ## CLI override behavior
 
-Run `run.py --help` for the latest override options.
-CLI flags such as `--mode`, `--goals`, `--attack-model`, and `--use-defenses` take precedence over YAML values.
+CLI flags take precedence over YAML values.
+
+| Flag | Description |
+|------|-------------|
+| `--config PATH` | Path to the YAML configuration file. |
+| `--mode {attack,agentic,baseline}` | Execution mode: `attack` (jailbreak), `agentic` (multi-step), `baseline` (direct). |
+| `--goals PATH` | Path to a custom goals JSON/CSV file. |
+| `--output-dir PATH` | Override the directory where results are saved. |
+| `--attack-model MODEL` | Override the model used by attack runners (e.g., `openai:gpt-4o`). |
+| `--target-model MODEL` | Override the target model to be evaluated. |
+| `--judge-model MODEL` | Override the model used for scoring. |
+| `--use-sandbox` | Enable sandbox isolation for tool execution. |
+| `--use-defenses [D1 ...]` | Space-separated list of defenses to enable (e.g., `jbshield gradient_cuff`). |
+| `--attack-plan [A1 ...]` | Space-separated list of attacks to run (e.g., `pair crescendo baseline`). |
+| `--baseline` | Short-hand for `--mode baseline`. |
+| `--goal-indices INDICES` | Comma-separated indices (e.g., `0,2,5`) to run specific goals from the dataset. |
+| `--verbose`, `-v` | Enable verbose logging. |
+
+Run `python run.py --help` for the latest options.

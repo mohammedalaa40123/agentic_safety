@@ -1,9 +1,19 @@
 # Quickstart
 
-## 1) Create and activate the Python environment
+## 0) Prerequisites
+
+- **OS**: macOS or Linux (required for sandbox isolation)
+- **Python**: 3.10+
+- **Isolation (Optional)**: `bubblewrap` (bwrap) or Docker, required for tool-execution sandboxing.
+
+## 1) Clone and setup environment
 
 ```bash
-cd /Users/mohamedahmed/Purdue/ECE570/agentic_safety
+# Clone the repository
+git clone https://github.com/mohammedalaa40123/agentic_safety.git
+cd agentic_safety
+
+# Create and activate the Python environment
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
@@ -27,12 +37,12 @@ pip install -r requirements-docs.txt
 Export the keys required by your chosen model backend:
 
 ```bash
-export OPENAI_API_KEY="..."
-export GEMINI_API_KEY="..."
-export GENAI_STUDIO_API_KEY="..."
-export ANTHROPIC_API_KEY="..."
-export OLLAMA_CLOUD_API_KEY="..."
-export WANDB_API_KEY="..."
+export OPENAI_API_KEY="..."            # OpenAI models
+export ANTHROPIC_API_KEY="..."         # Claude models
+export GEMINI_API_KEY="..."            # Google Gemini (standard API)
+export GENAI_STUDIO_API_KEY="..."      # Google Vertex AI / GenAI Studio (RCAC)
+export OLLAMA_CLOUD_API_KEY="..."      # Hosted Ollama endpoint (e.g., https://ollama.com/api)
+export WANDB_API_KEY="..."             # Optional: only if wandb.enabled: true
 ```
 
 ## 3) Run a baseline smoke experiment

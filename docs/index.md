@@ -37,6 +37,10 @@ This framework provides a repeatable evaluation harness that tests jailbreak att
 
 → [Full evaluation methodology and per-category breakdown](evaluation/index.md)
 
+## Responsible Use
+
+This framework is designed for **security research and safety evaluation** in controlled environments. Access to target models and tools should be isolated to prevent actual harm during testing. We encourage responsible disclosure of any vulnerabilities discovered using these tools.
+
 ## Core External Links
 
 - 🤗 [Live Space](https://huggingface.co/spaces/Mo-alaa/agentic-safety-eval) — interactive frontend and results API

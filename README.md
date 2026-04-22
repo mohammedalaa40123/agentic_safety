@@ -10,9 +10,25 @@ Evaluates PAIR, Crescendo, and Prompt-Fusion attacks across multi-step tool-use 
 [![Dataset](https://img.shields.io/badge/🤗%20Dataset-Results-FFD21E?style=flat-square)](https://huggingface.co/datasets/Mo-alaa/agentic-safety-results)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=flat-square&logo=github)](https://github.com/mohammedalaa40123/agentic_safety)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-Custom%20(Citation)-blue?style=flat-square)](LICENSE)
 
 </div>
+
+---
+
+## 📚 Citation
+
+If you use this framework in your research, please cite our benchmark paper:
+
+```bibtex
+@article{ahmed2026agentic,
+  title={Agentic Safety Evaluator: A Benchmarking Framework for Jailbreak Attacks on Tool-Using LLM Agents},
+  author={Ahmed, Mohamed},
+  journal={arXiv preprint},
+  year={2026},
+  url={https://github.com/mohammedalaa40123/agentic_safety}
+}
+```
 
 ---
 
@@ -210,6 +226,12 @@ Filter rules applied to the core benchmark charts:
 | 🔧 Configuration | [docs/configuration](https://mohammedalaa40123.github.io/agentic_safety/getting-started/configuration/) |
 | 🏗️ Architecture | [docs/architecture](https://mohammedalaa40123.github.io/agentic_safety/architecture/) |
 | 🚀 Deployment | [docs/deployment](https://mohammedalaa40123.github.io/agentic_safety/deployment/) |
+
+---
+
+## Responsible Use
+
+This framework is designed for **security research and safety evaluation** in controlled environments. Access to target models and tools should be isolated to prevent actual harm during testing. We encourage responsible disclosure of any vulnerabilities discovered using these tools.
 
 ---
 
