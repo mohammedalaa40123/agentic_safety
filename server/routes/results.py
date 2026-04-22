@@ -260,7 +260,7 @@ def results_summary() -> List[Dict[str, Any]]:
                 first: Dict[str, Any] = records[0]
                 record_count = len(records)
                 succeeded = sum(1 for r in records if _coerce_bool(r.get("attack_success", False)))
-                asr = succeeded / record_count if record_count > 0 else 0.0
+                MIR = succeeded / record_count if record_count > 0 else 0.0
                 out.append({
                     "path": rel,
                     "size_bytes": os.path.getsize(fpath),
@@ -272,7 +272,7 @@ def results_summary() -> List[Dict[str, Any]]:
                     "defense_name": first.get("defense_name", "") or "none",
                     "record_count": record_count,
                     "succeeded": succeeded,
-                    "asr": round(asr, 4),
+                    "MIR": round(MIR, 4),
                 })
             except Exception:
                 continue

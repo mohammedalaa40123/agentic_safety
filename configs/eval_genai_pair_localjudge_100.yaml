@@ -2,7 +2,7 @@ experiment_name: eval_genaistudio_pair_localjudge_100
 description: PAIR attack with Purdue GenAI Studio API using llama4 for fast attacker/judge passes and llama3.1 as target on 100 goals.
 mode: attack
 output_dir: results/agentic_experiments_100
-goals_path: data/agentic_scenarios_asr_eval_v2.json
+goals_path: data/agentic_scenarios_MIR_eval_v2.json
 
 models:
   attack_model: genai:llama4:latest

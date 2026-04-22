@@ -4,7 +4,7 @@ set -euo pipefail
 cd /workspaces/agentic_safety
 
 python scripts/genai_make_attack_suite_jobs_nogcg.py \
-  --goals data/agentic_scenarios_asr_eval_v2.json \
+  --goals data/agentic_scenarios_MIR_eval_v2.json \
   --chunk-size 100 \
   --model genai:llama3.1:latest \
   --rpm 20 \

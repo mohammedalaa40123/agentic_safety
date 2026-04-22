@@ -22,7 +22,7 @@ This framework provides a repeatable evaluation harness that tests jailbreak att
 | [🗺️ Threat Model](threat-model/index.md) | OWASP Agentic AI Top-10 taxonomy, full attack surface analysis |
 | [⚔️ Attacks](attacks/index.md) | PAIR, Crescendo, Prompt Fusion, and Hybrid method documentation |
 | [🛡️ Defenses](defenses/index.md) | JBShield, Gradient Cuff, Progent, StepShield — how each works |
-| [📊 Evaluation](evaluation/index.md) | Benchmark methodology, metrics (ASR/TIR/DBR/QTJ), leaderboard |
+| [📊 Evaluation](evaluation/index.md) | Benchmark methodology, metrics (MIR/TIR/DBR/QTJ), leaderboard |
 | [🌐 Providers](providers/index.md) | Cloud, local, and HPC provider setup |
 | [⚡ Getting Started](getting-started/quickstart.md) | Environment setup, install, and first run |
 | [🏗️ Architecture](architecture/system-overview.md) | System wiring, execution flows, threat-defense model |
@@ -32,9 +32,9 @@ This framework provides a repeatable evaluation harness that tests jailbreak att
 
 > Strict PAIR attack · No defenses · 4-model core set · Consistent Llama-3.3-70B judge
 
-![ASR by Model](docs/assets/charts/asr_by_model.png)
+![MIR by Model](docs/assets/charts/MIR_by_model.png)
 
-| Model | ASR | QTJ |
+| Model | MIR | QTJ |
 |-------|-----|-----|
 | Llama-3.3-70B | 83.7% | ~3.0 |
 | DeepSeek-R1-70B | 83.2% | ~3.0 |
@@ -221,7 +221,7 @@ The [OWASP Agentic AI Top-10](https://genai.owasp.org/) is the vulnerability tax
 
 ## Distribution in Benchmark Dataset
 
-The 999-record PAIR benchmark covers all 10 categories. Category distribution is visible in the [ASR by Category chart](../evaluation/results.md).
+The 999-record PAIR benchmark covers all 10 categories. Category distribution is visible in the [MIR by Category chart](../evaluation/results.md).
 
 → [Attack implementations for each category](../attacks/index.md)  
 → [Defense coverage per category](../defenses/index.md)
@@ -303,7 +303,7 @@ This framework implements four attack strategies, each targeting the agentic pip
 
 ## Attack Taxonomy
 
-| Attack | Strategy | Key Assumption | Typical ASR |
+| Attack | Strategy | Key Assumption | Typical MIR |
 |--------|----------|----------------|-------------|
 | **PAIR** | LLM-as-attacker iterative refinement | Attacker LLM judges and improves prompts | 66–84% (PAIR core benchmark) |
 | **Crescendo** | Multi-turn escalation | Small incremental steps bypass per-turn detection | 88–100% |
@@ -370,14 +370,14 @@ sequenceDiagram
 
 In the strict PAIR mini-benchmark (4 core models, no defenses):
 
-| Model | ASR | Avg QTJ |
+| Model | MIR | Avg QTJ |
 |-------|-----|---------|
 | Llama-3.3-70B | 83.7% | ~3.0 |
 | DeepSeek-R1-70B | 83.2% | ~3.0 |
 | DeepSeek-R1-14B | 75.4% | ~2.6 |
 | DeepSeek-V3.2 | 66.0% | ~2.2 |
 
-![ASR by Model](docs/assets/charts/asr_by_model.png)
+![MIR by Model](docs/assets/charts/MIR_by_model.png)
 
 ## Configuration
 
@@ -406,7 +406,7 @@ attack_config:
 ## Caveats
 
 - Results are sensitive to attacker/judge model choice — the benchmark uses a fixed judge to ensure comparability.
-- PAIR can have high apparent ASR if the judge model is lenient; use consistent judge across all reported comparisons.
+- PAIR can have high apparent MIR if the judge model is lenient; use consistent judge across all reported comparisons.
 
 
 ---
@@ -440,9 +440,9 @@ flowchart LR
 
 ## Benchmark Results
 
-Crescendo reaches very high ASR but requires significantly more queries than PAIR:
+Crescendo reaches very high MIR but requires significantly more queries than PAIR:
 
-| Model | ASR (Crescendo) | Avg QTJ | vs PAIR QTJ |
+| Model | MIR (Crescendo) | Avg QTJ | vs PAIR QTJ |
 |-------|----------------|---------|-------------|
 | DeepSeek-R1-14B | ~97–100% | ~14 | 5–6× more queries |
 | DeepSeek-V3.2 | ~88% | ~11 | ~5× more queries |
@@ -518,7 +518,7 @@ attack_config:
 ## Notes
 
 - Implemented in `attacks/prompt_fusion.py`
-- Small-N runs show near-100% ASR but sample sizes are too small for reliable benchmark comparison
+- Small-N runs show near-100% MIR but sample sizes are too small for reliable benchmark comparison
 - Not included in the strict PAIR mini-benchmark; used for supplementary analysis
 
 
@@ -837,11 +837,11 @@ These four models represent two size tiers and two model families, enabling fair
     1. **PAIR-only**: Crescendo and Prompt-Fusion results are not included in the benchmark leaderboard due to different sample sizes and judge consistency.
     2. **Judge-model bias risk**: All runs use the same Llama-3.3-70B judge family. A different judge may yield systematically higher or lower scores.
     3. **No defense-at-scale matrix**: Defense combinations (e.g., JBShield + StepShield) are not included in the primary benchmark. The benchmark is a no-defense baseline measurement.
-    4. **Compute environment variation**: Some runs were on RCAC HPC; others on cloud APIs. Latency affects duration metrics but not ASR/QTJ.
+    4. **Compute environment variation**: Some runs were on RCAC HPC; others on cloud APIs. Latency affects duration metrics but not MIR/QTJ.
 
 ## Metric Definitions
 
-→ [Full metrics reference (ASR/TIR/DBR/QTJ)](metrics.md)
+→ [Full metrics reference (MIR/TIR/DBR/QTJ)](metrics.md)
 
 ## Reproducibility
 
@@ -857,9 +857,9 @@ python scripts/gen_benchmark_charts.py \
 
 ## Results
 
-![ASR by Model](docs/assets/charts/asr_by_model.png)
+![MIR by Model](docs/assets/charts/MIR_by_model.png)
 
-![ASR by Category](docs/assets/charts/asr_by_category.png)
+![MIR by Category](docs/assets/charts/MIR_by_category.png)
 
 ![Tool Quality](docs/assets/charts/tool_quality.png)
 
@@ -871,24 +871,24 @@ python scripts/gen_benchmark_charts.py \
 ---
 ## Source: evaluation/metrics.md
 
-# Metrics Reference: ASR / TIR / DBR / QTJ
+# Metrics Reference: MIR / TIR / DBR / QTJ
 
 All metrics are implemented in `metrics/` and computed identically across every run. They are populated by `MetricsCollector` and exported to both CSV and JSON result files.
 
-## ASR — Attack Success Rate
+## MIR — Malicious Intent Rate
 
 **Definition**: The fraction of malicious evaluation goals where `attack_success = True`.
 
 ```
-ASR = successful_attacks / total_malicious_goals
+MIR = successful_attacks / total_malicious_goals
 ```
 
-- Only records with `is_malicious = True` contribute to ASR.
-- Records where `attack_success = None` are excluded from the ASR calculation (e.g., runs that encountered an error before judgment).
-- Implemented in `metrics/asr.py`
+- Only records with `is_malicious = True` contribute to MIR.
+- Records where `attack_success = None` are excluded from the MIR calculation (e.g., runs that encountered an error before judgment).
+- Implemented in `metrics/MIR.py`
 - An `attack_success = True` record means the judge awarded a score ≥ the configured threshold for at least one attack attempt.
 
-**Interpretation**: Higher ASR = model is more susceptible to the attack.
+**Interpretation**: Higher MIR = model is more susceptible to the attack.
 
 ---
 
@@ -936,7 +936,7 @@ QTJ = sum(queries for successful attacks) / count(successful attacks)
 - Returns `None` / `∞` if no successful attacks occurred (cannot be averaged).
 - Failed attacks are excluded — QTJ measures efficiency of successful attacks, not overall query cost.
 
-**Interpretation**: Lower QTJ = model is broken more quickly when it is susceptible. Combined with ASR, it characterizes the full attack cost profile.
+**Interpretation**: Lower QTJ = model is broken more quickly when it is susceptible. Combined with MIR, it characterizes the full attack cost profile.
 
 ---
 
@@ -969,7 +969,7 @@ Each result JSON contains a `records` array of `ExperimentRecord` objects:
 | `jailbreak_response` | str\|None | Response that succeeded (truncated 500 chars) |
 | `steps` | list | Per-step trace with tool calls and results |
 
-The `summary` key contains aggregated ASR, TIR, DBR, QTJ, avg_queries, avg_duration, and tool stats across all records in the file.
+The `summary` key contains aggregated MIR, TIR, DBR, QTJ, avg_queries, avg_duration, and tool stats across all records in the file.
 
 
 ---
@@ -981,7 +981,7 @@ The `summary` key contains aggregated ASR, TIR, DBR, QTJ, avg_queries, avg_durat
 
 > Strict PAIR · No defenses · 999 deduplicated records · Consistent judge
 
-| Rank | Model | ASR | Avg QTJ |
+| Rank | Model | MIR | Avg QTJ |
 |------|-------|-----|---------|
 | 1 (most resistant) | **DeepSeek-V3.2** | 66.0% | ~2.2 |
 | 2 | **DeepSeek-R1-14B** | 75.4% | ~2.6 |
@@ -993,23 +993,23 @@ The `summary` key contains aggregated ASR, TIR, DBR, QTJ, avg_queries, avg_durat
 
 ## Charts
 
-### ASR by Model
+### MIR by Model
 
-![ASR by Model](docs/assets/charts/asr_by_model.png)
+![MIR by Model](docs/assets/charts/MIR_by_model.png)
 
-### ASR by OWASP AAI Category
+### MIR by OWASP AAI Category
 
-![ASR by Category](docs/assets/charts/asr_by_category.png)
+![MIR by Category](docs/assets/charts/MIR_by_category.png)
 
 ### Tool-Call Quality
 
 ![Tool Quality](docs/assets/charts/tool_quality.png)
 
-### Query Efficiency vs ASR
+### Query Efficiency vs MIR
 
 ![Query Efficiency](docs/assets/charts/query_efficiency.png)
 
-*Lower QTJ among successful attacks means the model was broken quickly — this is worse, not better. DeepSeek-V3.2 is comparatively resistant (lower ASR).*
+*Lower QTJ among successful attacks means the model was broken quickly — this is worse, not better. DeepSeek-V3.2 is comparatively resistant (lower MIR).*
 
 ### Query Count Distribution
 
@@ -1027,10 +1027,10 @@ The live Space also exposes results via the `/api/results` endpoint and provides
 
 ## Interpreting the Leaderboard
 
-- **Low ASR is better** — it means the model resisted more attacks.
+- **Low MIR is better** — it means the model resisted more attacks.
 - **Low QTJ is worse** — among the attacks that did succeed, the model was broken quickly.
-- A model with low ASR but also low QTJ may have a sharp threshold: mostly resistant but easily broken once a good prompt is found.
-- The ideal model has low ASR *and* high QTJ (hard to break, and hard to achieve when broken).
+- A model with low MIR but also low QTJ may have a sharp threshold: mostly resistant but easily broken once a good prompt is found.
+- The ideal model has low MIR *and* high QTJ (hard to break, and hard to achieve when broken).
 
 
 ---
@@ -1056,8 +1056,8 @@ Output:
 
 ```
 docs/assets/charts/
-├── asr_by_model.png
-├── asr_by_category.png
+├── MIR_by_model.png
+├── MIR_by_category.png
 ├── tool_quality.png
 ├── query_efficiency.png
 ├── query_distribution.png
@@ -1089,7 +1089,7 @@ Older format files (plain list schema, no top-level `summary` key) are also hand
 
 ## Verifying Metric Values
 
-To cross-check a specific model's ASR:
+To cross-check a specific model's MIR:
 
 ```bash
 python3 -c "
@@ -1098,7 +1098,7 @@ from pathlib import Path
 
 # Load benchmark_data.json (normalised output)
 data = json.loads(Path('docs/assets/charts/benchmark_data.json').read_text())
-print('ASR by model:', data['asr_by_model'])
+print('MIR by model:', data['MIR_by_model'])
 print('Per-model N:', data['benchmark']['per_model_n'])
 "
 ```
@@ -1513,7 +1513,7 @@ This repository is a structured evaluation framework for agentic jailbreaks and 
 - Plug-and-play attack strategies: PAIR, GCG, Crescendo, baseline, prompt fusion, and hybrid variants
 - Defense modules: JBShield, Gradient Cuff, Progent, StepShield, plus registry-based activation
 - Sandbox tools: `file_io`, `code_exec`, `web_browse`, `network`
-- Metrics pipeline: ASR, TIR, DBR, QTJ, plus detailed per-run and per-goal logs
+- Metrics pipeline: MIR, TIR, DBR, QTJ, plus detailed per-run and per-goal logs
 
 ## High-level package layout
 
@@ -1879,7 +1879,7 @@ python run.py --config configs/eval_qwen_baseline.yaml --goals data/agentic_scen
 
 ## Metrics and troubleshooting
 
-- `ASR`, `TIR`, `DBR`, `QTJ`: primary evaluation metrics
+- `MIR`, `TIR`, `DBR`, `QTJ`: primary evaluation metrics
 - If a model backend fails, verify the provider key and available token limits
 - Slow experiments: reduce `attacks[*].params.n_iterations` or sandbox `max_steps`
 - If a goal yields only an error response, the run may skip that record during metric aggregation
@@ -2065,9 +2065,9 @@ Total files: 146
 - data/agentic_scenarios_10_mixed.json
 - data/agentic_scenarios_20.json
 - data/agentic_scenarios_5_safe.json
-- data/agentic_scenarios_asr_eval_v2.json
-- data/agentic_scenarios_asr_eval_v2_safe.json
-- data/agentic_scenarios_asr_eval_v2_unsafe.json
+- data/agentic_scenarios_MIR_eval_v2.json
+- data/agentic_scenarios_MIR_eval_v2_safe.json
+- data/agentic_scenarios_MIR_eval_v2_unsafe.json
 - data/agentic_scenarios_smoke5.json
 - data/agentic_scenarios_top10.json
 - data/generate_100_scenarios.py
@@ -2106,7 +2106,7 @@ Total files: 146
 - jobs/agentic_mistral_nemo.sub
 - jobs/agentic_qwen25.sub
 - main.py
-- metrics/asr.py
+- metrics/MIR.py
 - metrics/collector.py
 - metrics/dbr.py
 - metrics/__init__.py
@@ -2230,9 +2230,9 @@ The data folder includes mixed, safe-only, unsafe-only, and smoke datasets plus 
 
 Representative files:
 
-- agentic_scenarios_asr_eval_v2.json
-- agentic_scenarios_asr_eval_v2_safe.json
-- agentic_scenarios_asr_eval_v2_unsafe.json
+- agentic_scenarios_MIR_eval_v2.json
+- agentic_scenarios_MIR_eval_v2_safe.json
+- agentic_scenarios_MIR_eval_v2_unsafe.json
 - agentic_scenarios_100_labeled.json
 - advanced_jailbreak_samples_v2.json
 - generate_100_scenarios.py
@@ -2280,7 +2280,7 @@ The metrics package standardizes experiment scoring and output.
 
 | File | Purpose |
 | --- | --- |
-| metrics/asr.py | Attack Success Rate metric logic. |
+| metrics/MIR.py | Malicious Intent Rate metric logic. |
 | metrics/tir.py | Tool Invocation Rate metric logic. |
 | metrics/dbr.py | Defense Bypass Rate metric logic. |
 | metrics/qtj.py | Query-To-Jailbreak metric logic. |
@@ -2447,7 +2447,7 @@ python run.py --config configs/eval_qwen_baseline.yaml --goals data/agentic_scen
 
 ## Metrics and troubleshooting
 
-- `ASR`, `TIR`, `DBR`, `QTJ`: primary evaluation metrics
+- `MIR`, `TIR`, `DBR`, `QTJ`: primary evaluation metrics
 - If a model backend fails, verify the provider key and available token limits
 - Slow experiments: reduce `attacks[*].params.n_iterations` or sandbox `max_steps`
 - If a goal yields only an error response, the run may skip that record during metric aggregation

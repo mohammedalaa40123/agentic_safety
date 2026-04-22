@@ -18,8 +18,8 @@ Output:
 
 ```
 docs/assets/charts/
-├── asr_by_model.png
-├── asr_by_category.png
+├── MIR_by_model.png
+├── MIR_by_category.png
 ├── tool_quality.png
 ├── query_efficiency.png
 ├── query_distribution.png
@@ -51,7 +51,7 @@ Older format files (plain list schema, no top-level `summary` key) are also hand
 
 ## Verifying Metric Values
 
-To cross-check a specific model's ASR:
+To cross-check a specific model's MIR:
 
 ```bash
 python3 -c "
@@ -60,7 +60,7 @@ from pathlib import Path
 
 # Load benchmark_data.json (normalised output)
 data = json.loads(Path('docs/assets/charts/benchmark_data.json').read_text())
-print('ASR by model:', data['asr_by_model'])
+print('MIR by model:', data['MIR_by_model'])
 print('Per-model N:', data['benchmark']['per_model_n'])
 "
 ```

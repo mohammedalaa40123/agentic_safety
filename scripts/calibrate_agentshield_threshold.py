@@ -3,7 +3,7 @@
 
 Usage:
   python scripts/calibrate_agentshield_threshold.py \
-      --data data/agentic_scenarios_asr_eval_v2.json
+      --data data/agentic_scenarios_MIR_eval_v2.json
 """
 
 from __future__ import annotations

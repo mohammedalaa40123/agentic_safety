@@ -35,12 +35,12 @@ function GlassCard({
 
 // ── data ──────────────────────────────────────────────────────────────────────
 const PROVIDERS = [
-  { name: 'GenAI RCAC',  icon: '🏫', note: 'Purdue HPC', color: '#fbbf24' },
-  { name: 'OpenAI',      icon: '🤖', note: 'GPT-4o / 4.1', color: '#34d399' },
-  { name: 'OpenRouter',  icon: '🔀', note: '200+ models', color: '#60a5fa' },
-  { name: 'Gemini',      icon: '♊', note: 'Google AI',  color: '#a78bfa' },
-  { name: 'Anthropic',   icon: '🧠', note: 'Claude 3.x', color: '#f472b6' },
-  { name: 'Ollama',      icon: '🦙', note: 'Local LLMs', color: '#fb923c' },
+  { name: 'GenAI RCAC', icon: '🏫', note: 'Purdue HPC', color: '#fbbf24' },
+  { name: 'OpenAI', icon: '🤖', note: 'GPT-4o / 4.1', color: '#34d399' },
+  { name: 'OpenRouter', icon: '🔀', note: '200+ models', color: '#60a5fa' },
+  { name: 'Gemini', icon: '♊', note: 'Google AI', color: '#a78bfa' },
+  { name: 'Anthropic', icon: '🧠', note: 'Claude 3.x', color: '#f472b6' },
+  { name: 'Ollama', icon: '🦙', note: 'Local LLMs', color: '#fb923c' },
 ]
 
 const ATTACKS = [
@@ -103,9 +103,9 @@ function ArchDiagram() {
         {arrow('filtered')}
         {box('Target Agent', 'executes tools', '#60a5fa', Cpu)}
         {arrow('response')}
-        {box('Judge LLM', 'scores ASR', '#a78bfa', Eye)}
+        {box('Judge LLM', 'scores MIR', '#a78bfa', Eye)}
         {arrow('metric')}
-        {box('Results', 'ASR / Report', '#e879f9', BarChart3)}
+        {box('Results', 'MIR / Report', '#e879f9', BarChart3)}
       </div>
       {/* Sandbox row */}
       <div className="flex justify-center mt-1">
@@ -151,9 +151,9 @@ export default function Home() {
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Database, label: 'Datasets', val: '500+ scenarios', color: '#fbbf24' },
-            { icon: Swords,   label: 'Attack methods', val: '5 strategies', color: '#f87171' },
-            { icon: Shield,   label: 'Defenses', val: '5 guards', color: '#34d399' },
-            { icon: Globe,    label: 'Providers', val: '6 backends', color: '#60a5fa' },
+            { icon: Swords, label: 'Attack methods', val: '5 strategies', color: '#f87171' },
+            { icon: Shield, label: 'Defenses', val: '5 guards', color: '#34d399' },
+            { icon: Globe, label: 'Providers', val: '6 backends', color: '#60a5fa' },
           ].map(({ icon: Icon, label, val, color }, i) => (
             <motion.div key={label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.25 + i * 0.05 }}
@@ -300,17 +300,17 @@ export default function Home() {
         </div>
         <div className="grid sm:grid-cols-2 gap-4 text-xs">
           {[
-            { method: 'GET',    path: '/api/providers',                  desc: 'List all supported LLM providers' },
-            { method: 'POST',   path: '/api/providers/:id/validate',     desc: 'Validate an API key + list models' },
-            { method: 'GET',    path: '/api/datasets',                   desc: 'List available scenario datasets' },
-            { method: 'GET',    path: '/api/datasets/:name?limit=N',     desc: 'Preview first N entries of a dataset' },
-            { method: 'POST',   path: '/api/datasets/upload',            desc: 'Upload a custom JSON scenario file' },
-            { method: 'POST',   path: '/api/eval/launch',                desc: 'Launch an evaluation job' },
-            { method: 'GET',    path: '/api/eval/jobs',                  desc: 'List all past / running jobs' },
-            { method: 'GET',    path: '/api/eval/:id',                   desc: 'Get job status + streaming log tail' },
-            { method: 'DELETE', path: '/api/eval/:id',                   desc: 'Cancel a running job' },
-            { method: 'GET',    path: '/api/results',                    desc: 'List saved result files' },
-            { method: 'GET',    path: '/api/results/:path',              desc: 'Fetch a result file (JSON)' },
+            { method: 'GET', path: '/api/providers', desc: 'List all supported LLM providers' },
+            { method: 'POST', path: '/api/providers/:id/validate', desc: 'Validate an API key + list models' },
+            { method: 'GET', path: '/api/datasets', desc: 'List available scenario datasets' },
+            { method: 'GET', path: '/api/datasets/:name?limit=N', desc: 'Preview first N entries of a dataset' },
+            { method: 'POST', path: '/api/datasets/upload', desc: 'Upload a custom JSON scenario file' },
+            { method: 'POST', path: '/api/eval/launch', desc: 'Launch an evaluation job' },
+            { method: 'GET', path: '/api/eval/jobs', desc: 'List all past / running jobs' },
+            { method: 'GET', path: '/api/eval/:id', desc: 'Get job status + streaming log tail' },
+            { method: 'DELETE', path: '/api/eval/:id', desc: 'Cancel a running job' },
+            { method: 'GET', path: '/api/results', desc: 'List saved result files' },
+            { method: 'GET', path: '/api/results/:path', desc: 'Fetch a result file (JSON)' },
           ].map(({ method, path, desc }) => {
             const mc: Record<string, string> = {
               GET: '#34d399', POST: '#60a5fa', DELETE: '#f87171', PATCH: '#fbbf24',

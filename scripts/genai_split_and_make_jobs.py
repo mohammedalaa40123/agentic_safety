@@ -3,7 +3,7 @@
 
 Example:
   python scripts/genai_split_and_make_jobs.py \
-    --goals data/agentic_scenarios_asr_eval_v2.json \
+    --goals data/agentic_scenarios_MIR_eval_v2.json \
     --chunk-size 100 \
     --models genai:llama3.1:latest genai:llama3.3:70b genai:deepseek-r1:14b \
     --out-root jobs/genai_shards

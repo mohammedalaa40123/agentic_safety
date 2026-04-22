@@ -22,7 +22,7 @@ interface ResultSummary {
   defense_name: string
   record_count: number
   succeeded: number
-  asr: number
+  MIR: number
 }
 
 type GroupBy = 'model' | 'attack' | 'defense'
@@ -52,13 +52,13 @@ function defenseColor(name: string): string {
   return c[name.toLowerCase()] ?? '#6366f1'
 }
 
-// ── ASR Ring ──────────────────────────────────────────────────────────────────
+// ── MIR Ring ──────────────────────────────────────────────────────────────────
 
-function ASRRing({ asr, size = 56 }: { asr: number; size?: number }) {
+function MIRRing({ MIR, size = 56 }: { MIR: number; size?: number }) {
   const r = size * 0.4
   const circ = 2 * Math.PI * r
-  const dash = (asr * circ)
-  const color = asr > 0.5 ? '#f87171' : asr > 0.2 ? '#fbbf24' : '#34d399'
+  const dash = (MIR * circ)
+  const color = MIR > 0.5 ? '#f87171' : MIR > 0.2 ? '#fbbf24' : '#34d399'
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(99,102,241,0.12)" strokeWidth={size * 0.09} />
@@ -85,8 +85,8 @@ function RunCard({
   onDelete: (e: React.MouseEvent) => void
   onDownload: (e: React.MouseEvent) => void
 }) {
-  const pct = (run.asr * 100).toFixed(1)
-  const color = run.asr > 0.5 ? '#f87171' : run.asr > 0.2 ? '#fbbf24' : '#34d399'
+  const pct = (run.MIR * 100).toFixed(1)
+  const color = run.MIR > 0.5 ? '#f87171' : run.MIR > 0.2 ? '#fbbf24' : '#34d399'
   const atkC = attackColor(run.attack_name)
   const defC = defenseColor(run.defense_name)
 
@@ -122,13 +122,13 @@ function RunCard({
         </button>
       </div>
 
-      {/* ASR */}
+      {/* MIR */}
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="text-xl font-bold leading-none" style={{ color }}>{pct}%</div>
-          <div className="text-[10px] text-slate-600 mt-0.5">ASR</div>
+          <div className="text-[10px] text-slate-600 mt-0.5">MIR</div>
         </div>
-        <ASRRing asr={run.asr} />
+        <MIRRing MIR={run.MIR} />
       </div>
 
       {/* Model */}
@@ -174,8 +174,8 @@ function GroupSection({
   onDownload: (path: string) => void
 }) {
   const [collapsed, setCollapsed] = useState(false)
-  const bestASR = Math.max(...group.runs.map((r) => r.asr))
-  const asrColor = bestASR > 0.5 ? '#f87171' : bestASR > 0.2 ? '#fbbf24' : '#34d399'
+  const bestMIR = Math.max(...group.runs.map((r) => r.MIR))
+  const MIRColor = bestMIR > 0.5 ? '#f87171' : bestMIR > 0.2 ? '#fbbf24' : '#34d399'
 
   return (
     <div className="space-y-3">
@@ -187,8 +187,8 @@ function GroupSection({
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
           style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(99,102,241,0.15)' }}>
           <span className="text-xs font-semibold text-slate-300">{group.key}</span>
-          <span className="text-[10px] font-bold" style={{ color: asrColor }}>
-            best {(bestASR * 100).toFixed(0)}%
+          <span className="text-[10px] font-bold" style={{ color: MIRColor }}>
+            best {(bestMIR * 100).toFixed(0)}%
           </span>
           <span className="text-[10px] text-slate-600">{group.runs.length} run{group.runs.length !== 1 ? 's' : ''}</span>
           {collapsed
@@ -327,10 +327,10 @@ function RecordPopover({ record, anchorRef }: { record: Record<string, unknown>;
 
 function ModelInfoBar({ summary }: { summary: ResultSummary }) {
   const items = [
-    { icon: Cpu,    label: 'Target',  val: shortModel(summary.target_model) },
-    { icon: Swords, label: 'Attack',  val: summary.attack_name },
-    { icon: Scale,  label: 'Judge',   val: shortModel(summary.judge_model) },
-    { icon: Tag,    label: 'Defense', val: summary.defense_name || 'none' },
+    { icon: Cpu, label: 'Target', val: shortModel(summary.target_model) },
+    { icon: Swords, label: 'Attack', val: summary.attack_name },
+    { icon: Scale, label: 'Judge', val: shortModel(summary.judge_model) },
+    { icon: Tag, label: 'Defense', val: summary.defense_name || 'none' },
   ].filter((x) => x.val && x.val !== 'undefined')
 
   return (
@@ -349,10 +349,10 @@ function ModelInfoBar({ summary }: { summary: ResultSummary }) {
   )
 }
 
-// ── ASR Gauge (detail view) ───────────────────────────────────────────────────
+// ── MIR Gauge (detail view) ───────────────────────────────────────────────────
 
-function ASRGauge({ asr, total }: { asr: number; total: number }) {
-  const pct = asr * 100
+function MIRGauge({ MIR, total }: { MIR: number; total: number }) {
+  const pct = MIR * 100
   const r = 44; const circ = 2 * Math.PI * r; const dash = (pct / 100) * circ
   return (
     <div className="rounded-xl p-5 flex flex-col items-center justify-center"
@@ -360,14 +360,14 @@ function ASRGauge({ asr, total }: { asr: number; total: number }) {
       <div className="relative w-28 h-28 mb-3">
         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
           <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(99,102,241,0.1)" strokeWidth="10" />
-          <motion.circle cx="50" cy="50" r={r} fill="none" stroke="url(#asrGrad)" strokeWidth="10"
+          <motion.circle cx="50" cy="50" r={r} fill="none" stroke="url(#MIRGrad)" strokeWidth="10"
             strokeLinecap="round" strokeDasharray={circ}
             initial={{ strokeDashoffset: circ }}
             animate={{ strokeDashoffset: circ - dash }}
             transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
           />
           <defs>
-            <linearGradient id="asrGrad" x1="0" y1="0" x2="1" y2="0">
+            <linearGradient id="MIRGrad" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#f87171" /><stop offset="100%" stopColor="#e879f9" />
             </linearGradient>
           </defs>
@@ -378,7 +378,7 @@ function ASRGauge({ asr, total }: { asr: number; total: number }) {
           </motion.span>
         </div>
       </div>
-      <div className="text-xs text-slate-400 font-medium">Attack Success Rate</div>
+      <div className="text-xs text-slate-400 font-medium">Malicious Intent Rate</div>
       <div className="text-xs text-slate-600 mt-0.5">{total} scenarios</div>
     </div>
   )
@@ -423,25 +423,25 @@ function CategoryChart({ records }: { records: Record<string, unknown>[] }) {
   }
   const data = Object.entries(counts).map(([name, v]) => ({
     name,
-    asr: v.total > 0 ? +(v.success / v.total).toFixed(3) : 0,
+    MIR: v.total > 0 ? +(v.success / v.total).toFixed(3) : 0,
     total: v.total,
-  })).sort((a, b) => b.asr - a.asr)
-  const PALETTE = ['#f87171','#fb923c','#fbbf24','#a3e635','#34d399','#22d3ee','#60a5fa','#a78bfa','#f472b6','#e879f9']
+  })).sort((a, b) => b.MIR - a.MIR)
+  const PALETTE = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#34d399', '#22d3ee', '#60a5fa', '#a78bfa', '#f472b6', '#e879f9']
 
   return (
     <div className="rounded-xl p-5"
       style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(99,102,241,0.12)', backdropFilter: 'blur(8px)' }}>
       <div className="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
-        <TrendingUp size={14} className="text-indigo-400" />ASR by category
+        <TrendingUp size={14} className="text-indigo-400" />MIR by category
       </div>
       <ResponsiveContainer width="100%" height={Math.max(180, data.length * 30)}>
         <BarChart data={data} layout="vertical" margin={{ left: 100, right: 20 }}>
           <XAxis type="number" domain={[0, 1]} tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
             tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
           <YAxis type="category" dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} width={100} axisLine={false} tickLine={false} />
-          <Tooltip formatter={(v: number) => [`${(v * 100).toFixed(1)}%`, 'ASR']}
+          <Tooltip formatter={(v: number) => [`${(v * 100).toFixed(1)}%`, 'MIR']}
             contentStyle={{ background: 'rgba(6,9,22,0.97)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 10, fontSize: 12 }} />
-          <Bar dataKey="asr" radius={[0, 5, 5, 0]} isAnimationActive>
+          <Bar dataKey="MIR" radius={[0, 5, 5, 0]} isAnimationActive>
             {data.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
           </Bar>
         </BarChart>
@@ -511,8 +511,8 @@ export default function Results() {
     for (const s of summaries) {
       const key =
         groupBy === 'model' ? shortModel(s.target_model) :
-        groupBy === 'attack' ? (s.attack_name || 'unknown') :
-        (s.defense_name || 'none')
+          groupBy === 'attack' ? (s.attack_name || 'unknown') :
+            (s.defense_name || 'none')
       const arr = map.get(key) ?? []
       arr.push(s)
       map.set(key, arr)
@@ -520,9 +520,9 @@ export default function Results() {
     return Array.from(map.entries())
       .map(([key, runs]) => ({ key, runs }))
       .sort((a, b) => {
-        const aASR = Math.max(...a.runs.map((r) => r.asr))
-        const bASR = Math.max(...b.runs.map((r) => r.asr))
-        return bASR - aASR
+        const aMIR = Math.max(...a.runs.map((r) => r.MIR))
+        const bMIR = Math.max(...b.runs.map((r) => r.MIR))
+        return bMIR - aMIR
       })
   }, [summaries, groupBy])
 
@@ -680,7 +680,7 @@ export default function Results() {
                   <ModelInfoBar summary={selectedSummary} />
 
                   <div className="grid grid-cols-2 gap-4">
-                    <ASRGauge asr={selectedSummary.asr} total={records.length} />
+                    <MIRGauge MIR={selectedSummary.MIR} total={records.length} />
                     <StatsCard succeeded={succeeded} blocked={records.length - succeeded} />
                   </div>
 

@@ -25,9 +25,9 @@ The data folder includes mixed, safe-only, unsafe-only, and smoke datasets plus 
 
 Representative files:
 
-- agentic_scenarios_asr_eval_v2.json
-- agentic_scenarios_asr_eval_v2_safe.json
-- agentic_scenarios_asr_eval_v2_unsafe.json
+- agentic_scenarios_MIR_eval_v2.json
+- agentic_scenarios_MIR_eval_v2_safe.json
+- agentic_scenarios_MIR_eval_v2_unsafe.json
 - agentic_scenarios_100_labeled.json
 - advanced_jailbreak_samples_v2.json
 - generate_100_scenarios.py

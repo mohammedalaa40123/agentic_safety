@@ -34,14 +34,14 @@ sequenceDiagram
 
 In the strict PAIR mini-benchmark (4 core models, no defenses):
 
-| Model | ASR | Avg QTJ |
+| Model | MIR | Avg QTJ |
 |-------|-----|---------|
 | Llama-3.3-70B | 83.7% | ~3.0 |
 | DeepSeek-R1-70B | 83.2% | ~3.0 |
 | DeepSeek-R1-14B | 75.4% | ~2.6 |
 | DeepSeek-V3.2 | 66.0% | ~2.2 |
 
-![ASR by Model](../assets/charts/asr_by_model.png)
+![MIR by Model](../assets/charts/MIR_by_model.png)
 
 ## Configuration
 
@@ -70,4 +70,4 @@ attack_config:
 ## Caveats
 
 - Results are sensitive to attacker/judge model choice — the benchmark uses a fixed judge to ensure comparability.
-- PAIR can have high apparent ASR if the judge model is lenient; use consistent judge across all reported comparisons.
+- PAIR can have high apparent MIR if the judge model is lenient; use consistent judge across all reported comparisons.

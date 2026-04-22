@@ -18,7 +18,7 @@ Algorithm (from the paper):
      (adaptive refinement loop).
 
 Attack Type: Indirect prompt injection (planning phase)
-Key Metric: >70% ASR on ReAct agents; evades output-based filters
+Key Metric: >70% MIR on ReAct agents; evades output-based filters
 """
 
 from __future__ import annotations

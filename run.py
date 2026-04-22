@@ -478,8 +478,8 @@ def main() -> None:
     if summary["total_experiments"] == 0:
         print("FINAL — No valid experiments (all outcomes were skipped due to errors).")
     else:
-        metric_label = "Task Success" if cfg.mode == "agentic" else "ASR"
-        metric_val = summary['Task_Success'] if cfg.mode == "agentic" else summary['ASR']
+        metric_label = "Task Success" if cfg.mode == "agentic" else "MIR"
+        metric_val = summary['Task_Success'] if cfg.mode == "agentic" else summary['MIR']
         print(f"FINAL — {metric_label}: {metric_val:.1%} | Experiments: {summary['total_experiments']} | Avg Queries: {summary['avg_queries']:.1f}")
     print("=" * 60)
 

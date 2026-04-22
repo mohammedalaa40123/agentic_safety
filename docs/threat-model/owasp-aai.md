@@ -88,7 +88,7 @@ The [OWASP Agentic AI Top-10](https://genai.owasp.org/) is the vulnerability tax
 
 ## Distribution in Benchmark Dataset
 
-The 999-record PAIR benchmark covers all 10 categories. Category distribution is visible in the [ASR by Category chart](../evaluation/results.md).
+The 999-record PAIR benchmark covers all 10 categories. Category distribution is visible in the [MIR by Category chart](../evaluation/results.md).
 
 → [Attack implementations for each category](../attacks/index.md)  
 → [Defense coverage per category](../defenses/index.md)

@@ -29,11 +29,11 @@ These four models represent two size tiers and two model families, enabling fair
     1. **PAIR-only**: Crescendo and Prompt-Fusion results are not included in the benchmark leaderboard due to different sample sizes and judge consistency.
     2. **Judge-model bias risk**: All runs use the same Llama-3.3-70B judge family. A different judge may yield systematically higher or lower scores.
     3. **No defense-at-scale matrix**: Defense combinations (e.g., JBShield + StepShield) are not included in the primary benchmark. The benchmark is a no-defense baseline measurement.
-    4. **Compute environment variation**: Some runs were on RCAC HPC; others on cloud APIs. Latency affects duration metrics but not ASR/QTJ.
+    4. **Compute environment variation**: Some runs were on RCAC HPC; others on cloud APIs. Latency affects duration metrics but not MIR/QTJ.
 
 ## Metric Definitions
 
-→ [Full metrics reference (ASR/TIR/DBR/QTJ)](metrics.md)
+→ [Full metrics reference (MIR/TIR/DBR/QTJ)](metrics.md)
 
 ## Reproducibility
 
@@ -49,9 +49,9 @@ python scripts/gen_benchmark_charts.py \
 
 ## Results
 
-![ASR by Model](../assets/charts/asr_by_model.png)
+![MIR by Model](../assets/charts/MIR_by_model.png)
 
-![ASR by Category](../assets/charts/asr_by_category.png)
+![MIR by Category](../assets/charts/MIR_by_category.png)
 
 ![Tool Quality](../assets/charts/tool_quality.png)
 

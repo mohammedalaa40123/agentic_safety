@@ -26,9 +26,9 @@ flowchart LR
 
 ## Benchmark Results
 
-Crescendo reaches very high ASR but requires significantly more queries than PAIR:
+Crescendo reaches very high MIR but requires significantly more queries than PAIR:
 
-| Model | ASR (Crescendo) | Avg QTJ | vs PAIR QTJ |
+| Model | MIR (Crescendo) | Avg QTJ | vs PAIR QTJ |
 |-------|----------------|---------|-------------|
 | DeepSeek-R1-14B | ~97–100% | ~14 | 5–6× more queries |
 | DeepSeek-V3.2 | ~88% | ~11 | ~5× more queries |

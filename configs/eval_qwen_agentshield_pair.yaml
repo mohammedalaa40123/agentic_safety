@@ -1,7 +1,7 @@
 experiment_name: eval_qwen_agentshield_pair
 mode: attack
 output_dir: results/agentic_experiments
-goals_path: data/agentic_scenarios_asr_eval_v2_unsafe.json
+goals_path: data/agentic_scenarios_MIR_eval_v2_unsafe.json
 
 models:
   attack_model: qwen25-7b

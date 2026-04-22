@@ -66,7 +66,7 @@ python run.py --config configs/eval_qwen_baseline.yaml --goals data/agentic_scen
 
 ## Metrics and troubleshooting
 
-- `ASR`, `TIR`, `DBR`, `QTJ`: primary evaluation metrics
+- `MIR`, `TIR`, `DBR`, `QTJ`: primary evaluation metrics
 - If a model backend fails, verify the provider key and available token limits
 - Slow experiments: reduce `attacks[*].params.n_iterations` or sandbox `max_steps`
 - If a goal yields only an error response, the run may skip that record during metric aggregation

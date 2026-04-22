@@ -31,20 +31,20 @@ def fetch(job_id: str) -> dict:
 def summarise(job: dict) -> str:
     rp = job.get("result_path") or ""
     if rp:
-        # Try to get quick ASR from result file
+        # Try to get quick MIR from result file
         try:
             with open(rp) as f:
                 data = json.load(f)
             if isinstance(data, dict) and "summary" in data:
                 s = data["summary"]
-                return f"N={s['total_experiments']} ASR={s['ASR']:.0%} Task={s.get('Task_Success',0):.0%}"
+                return f"N={s['total_experiments']} MIR={s['MIR']:.0%} Task={s.get('Task_Success',0):.0%}"
             elif isinstance(data, list):
                 import statistics
-                asr = statistics.mean(
+                MIR = statistics.mean(
                     1 if str(r.get("attack_success", "")).lower() in ("true", "1") else 0
                     for r in data if isinstance(r, dict)
                 )
-                return f"N={len(data)} ASR={asr:.0%}"
+                return f"N={len(data)} MIR={MIR:.0%}"
         except Exception:
             pass
     tail = job.get("log_tail") or []

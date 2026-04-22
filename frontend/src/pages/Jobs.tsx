@@ -9,11 +9,11 @@ import { useJobStore } from '../stores/jobStore'
 import { Link } from 'react-router-dom'
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; Icon: React.ElementType; pulse: boolean }> = {
-  queued:    { bg: 'rgba(251,191,36,0.1)',  text: '#fbbf24', border: 'rgba(251,191,36,0.25)',  Icon: Clock,        pulse: false },
-  running:   { bg: 'rgba(99,102,241,0.12)', text: '#818cf8', border: 'rgba(99,102,241,0.3)',   Icon: Circle,       pulse: true  },
-  completed: { bg: 'rgba(52,211,153,0.1)',  text: '#34d399', border: 'rgba(52,211,153,0.25)',  Icon: CheckCircle2, pulse: false },
-  failed:    { bg: 'rgba(239,68,68,0.1)',   text: '#f87171', border: 'rgba(239,68,68,0.25)',   Icon: XCircle,      pulse: false },
-  cancelled: { bg: 'rgba(100,116,139,0.1)', text: '#64748b', border: 'rgba(100,116,139,0.2)',  Icon: Ban,          pulse: false },
+  queued: { bg: 'rgba(251,191,36,0.1)', text: '#fbbf24', border: 'rgba(251,191,36,0.25)', Icon: Clock, pulse: false },
+  running: { bg: 'rgba(99,102,241,0.12)', text: '#818cf8', border: 'rgba(99,102,241,0.3)', Icon: Circle, pulse: true },
+  completed: { bg: 'rgba(52,211,153,0.1)', text: '#34d399', border: 'rgba(52,211,153,0.25)', Icon: CheckCircle2, pulse: false },
+  failed: { bg: 'rgba(239,68,68,0.1)', text: '#f87171', border: 'rgba(239,68,68,0.25)', Icon: XCircle, pulse: false },
+  cancelled: { bg: 'rgba(100,116,139,0.1)', text: '#64748b', border: 'rgba(100,116,139,0.2)', Icon: Ban, pulse: false },
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -72,7 +72,7 @@ function LogPane({ job }: { job: JobSummary }) {
   useEffect(() => {
     if (job.log_tail?.length) setLines(job.log_tail)
     if (job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') return
-    const ws = createJobSocket(job.id, (line) => setLines((prev) => [...prev, line]), () => {})
+    const ws = createJobSocket(job.id, (line) => setLines((prev) => [...prev, line]), () => { })
     return () => ws.close()
   }, [job.id, job.status])
 
@@ -136,17 +136,17 @@ function fmtDuration(secs: number | null | undefined) {
 // ── Per-job result summary ────────────────────────────────────────────────────
 interface ResultsSummary {
   total_experiments: number
-  ASR: number
+  MIR: number
   Task_Success: number
   avg_duration?: number
   avg_queries?: number
   TIR?: number
-  by_category?: Record<string, { n: number; ASR: number; Task_Success: number }>
+  by_category?: Record<string, { n: number; MIR: number; Task_Success: number }>
 }
 
 function ResultsPane({ jobId }: { jobId: string }) {
   const [summary, setSummary] = useState<ResultsSummary | null>(null)
-  const [cats, setCats] = useState<[string, { n: number; ASR: number; Task_Success: number }][]>([])
+  const [cats, setCats] = useState<[string, { n: number; MIR: number; Task_Success: number }][]>([])
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
 
@@ -158,24 +158,24 @@ function ResultsPane({ jobId }: { jobId: string }) {
         if (r.summary && r.records) {
           s = r.summary as ResultsSummary
           setCats(
-            Object.entries((s.by_category ?? {}) as Record<string, { n: number; ASR: number; Task_Success: number }>)
-              .sort((a, b) => b[1].ASR - a[1].ASR)
+            Object.entries((s.by_category ?? {}) as Record<string, { n: number; MIR: number; Task_Success: number }>)
+              .sort((a, b) => b[1].MIR - a[1].MIR)
           )
         } else if (Array.isArray(raw)) {
           const recs = raw as Record<string, unknown>[]
           const n = recs.length
           const attacked = recs.filter((rec) => String(rec.attack_success).toLowerCase() === 'true').length
-          const task_ok  = recs.filter((rec) => String(rec.task_success).toLowerCase()  === 'true').length
+          const task_ok = recs.filter((rec) => String(rec.task_success).toLowerCase() === 'true').length
           const tot_tools = recs.reduce((acc, rec) => acc + (Number(rec.tool_calls_total) || 0), 0)
-          const tot_dur   = recs.reduce((acc, rec) => acc + (Number(rec.duration) || 0), 0)
-          const tot_q     = recs.reduce((acc, rec) => acc + (Number(rec.queries) || 0), 0)
+          const tot_dur = recs.reduce((acc, rec) => acc + (Number(rec.duration) || 0), 0)
+          const tot_q = recs.reduce((acc, rec) => acc + (Number(rec.queries) || 0), 0)
           s = {
             total_experiments: n,
-            ASR: n ? attacked / n : 0,
+            MIR: n ? attacked / n : 0,
             Task_Success: n ? task_ok / n : 0,
             avg_duration: n ? tot_dur / n : 0,
-            avg_queries:  n ? tot_q  / n : 0,
-            TIR:          n ? tot_tools / n : 0,
+            avg_queries: n ? tot_q / n : 0,
+            TIR: n ? tot_tools / n : 0,
           }
         } else {
           setErr('Unknown result format'); return
@@ -196,12 +196,12 @@ function ResultsPane({ jobId }: { jobId: string }) {
   )
 
   const pills = [
-    { label: 'N',            val: String(summary.total_experiments), color: '#818cf8' },
-    { label: 'ASR',          val: `${(summary.ASR * 100).toFixed(1)}%`, color: summary.ASR >= 0.5 ? '#f87171' : '#34d399' },
+    { label: 'N', val: String(summary.total_experiments), color: '#818cf8' },
+    { label: 'MIR', val: `${(summary.MIR * 100).toFixed(1)}%`, color: summary.MIR >= 0.5 ? '#f87171' : '#34d399' },
     { label: 'Task Success', val: `${(summary.Task_Success * 100).toFixed(1)}%`, color: '#a3e635' },
     ...(summary.avg_duration != null ? [{ label: 'Avg Duration', val: `${summary.avg_duration.toFixed(1)}s`, color: '#94a3b8' }] : []),
-    ...(summary.avg_queries  != null ? [{ label: 'Avg Queries',  val: summary.avg_queries.toFixed(1),       color: '#94a3b8' }] : []),
-    ...(summary.TIR          != null ? [{ label: 'TIR',          val: summary.TIR.toFixed(1),               color: '#fb923c' }] : []),
+    ...(summary.avg_queries != null ? [{ label: 'Avg Queries', val: summary.avg_queries.toFixed(1), color: '#94a3b8' }] : []),
+    ...(summary.TIR != null ? [{ label: 'TIR', val: summary.TIR.toFixed(1), color: '#fb923c' }] : []),
   ]
 
   return (
@@ -233,7 +233,7 @@ function ResultsPane({ jobId }: { jobId: string }) {
                 <tr style={{ background: 'rgba(15,23,42,0.8)', borderBottom: '1px solid rgba(99,102,241,0.08)' }}>
                   <th className="px-3 py-1.5 text-left text-slate-500 font-medium">Category</th>
                   <th className="px-3 py-1.5 text-center text-slate-500 font-medium">N</th>
-                  <th className="px-3 py-1.5 text-center text-slate-500 font-medium">ASR</th>
+                  <th className="px-3 py-1.5 text-center text-slate-500 font-medium">MIR</th>
                   <th className="px-3 py-1.5 text-center text-slate-500 font-medium">Task</th>
                 </tr>
               </thead>
@@ -243,8 +243,8 @@ function ResultsPane({ jobId }: { jobId: string }) {
                     <td className="px-3 py-1.5 text-slate-400 max-w-[220px] truncate" title={cat}>{cat}</td>
                     <td className="px-3 py-1.5 text-center text-slate-500">{v.n}</td>
                     <td className="px-3 py-1.5 text-center font-mono"
-                      style={{ color: v.ASR >= 0.5 ? '#f87171' : '#34d399' }}>
-                      {(v.ASR * 100).toFixed(0)}%
+                      style={{ color: v.MIR >= 0.5 ? '#f87171' : '#34d399' }}>
+                      {(v.MIR * 100).toFixed(0)}%
                     </td>
                     <td className="px-3 py-1.5 text-center font-mono text-slate-500">
                       {(v.Task_Success * 100).toFixed(0)}%
@@ -274,7 +274,7 @@ export default function Jobs() {
   useEffect(() => {
     api.listJobs().then(setJobs).catch(console.error)
     const interval = setInterval(() => {
-      api.listJobs().then((list) => list.forEach(upsertJob)).catch(() => {})
+      api.listJobs().then((list) => list.forEach(upsertJob)).catch(() => { })
     }, 4000)
     return () => clearInterval(interval)
   }, [])
@@ -296,10 +296,10 @@ export default function Jobs() {
     } finally { setRemoving(null) }
   }
 
-  const queued    = jobs.filter((j) => j.status === 'queued').length
-  const running   = jobs.filter((j) => j.status === 'running').length
+  const queued = jobs.filter((j) => j.status === 'queued').length
+  const running = jobs.filter((j) => j.status === 'running').length
   const completed = jobs.filter((j) => j.status === 'completed').length
-  const failed    = jobs.filter((j) => j.status === 'failed').length
+  const failed = jobs.filter((j) => j.status === 'failed').length
 
   return (
     <div className="page-wrapper max-w-4xl mx-auto space-y-6">

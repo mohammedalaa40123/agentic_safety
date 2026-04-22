@@ -201,7 +201,7 @@ export const api = {
       path: string; size_bytes: number; modified: number
       target_model: string; attack_name: string; attack_model: string
       judge_model: string; defense_name: string
-      record_count: number; succeeded: number; asr: number
+      record_count: number; succeeded: number; MIR: number
     }[]>('GET', '/api/results/summary'),
 
   getResult: (relPath: string) =>
@@ -229,7 +229,7 @@ export function createJobSocket(
       const msg = JSON.parse(ev.data) as { type: string; line?: string; status?: string }
       if (msg.type === 'log' && msg.line !== undefined) onLog(msg.line)
       else if (msg.type === 'done') onDone(msg.status ?? 'unknown')
-    } catch (_) {}
+    } catch (_) { }
   }
   return ws
 }

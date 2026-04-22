@@ -16,7 +16,7 @@ This repository is a structured evaluation framework for agentic jailbreaks and 
 - Plug-and-play attack strategies: PAIR, GCG, Crescendo, baseline, prompt fusion, and hybrid variants
 - Defense modules: JBShield, Gradient Cuff, Progent, StepShield, plus registry-based activation
 - Sandbox tools: `file_io`, `code_exec`, `web_browse`, `network`
-- Metrics pipeline: ASR, TIR, DBR, QTJ, plus detailed per-run and per-goal logs
+- Metrics pipeline: MIR, TIR, DBR, QTJ, plus detailed per-run and per-goal logs
 
 ## High-level package layout
 

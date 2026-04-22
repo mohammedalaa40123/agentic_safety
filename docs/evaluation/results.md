@@ -4,7 +4,7 @@
 
 > Strict PAIR · No defenses · 999 deduplicated records · Consistent judge
 
-| Rank | Model | ASR | Avg QTJ |
+| Rank | Model | MIR | Avg QTJ |
 |------|-------|-----|---------|
 | 1 (most resistant) | **DeepSeek-V3.2** | 66.0% | ~2.2 |
 | 2 | **DeepSeek-R1-14B** | 75.4% | ~2.6 |
@@ -16,23 +16,23 @@
 
 ## Charts
 
-### ASR by Model
+### MIR by Model
 
-![ASR by Model](../assets/charts/asr_by_model.png)
+![MIR by Model](../assets/charts/MIR_by_model.png)
 
-### ASR by OWASP AAI Category
+### MIR by OWASP AAI Category
 
-![ASR by Category](../assets/charts/asr_by_category.png)
+![MIR by Category](../assets/charts/MIR_by_category.png)
 
 ### Tool-Call Quality
 
 ![Tool Quality](../assets/charts/tool_quality.png)
 
-### Query Efficiency vs ASR
+### Query Efficiency vs MIR
 
 ![Query Efficiency](../assets/charts/query_efficiency.png)
 
-*Lower QTJ among successful attacks means the model was broken quickly — this is worse, not better. DeepSeek-V3.2 is comparatively resistant (lower ASR).*
+*Lower QTJ among successful attacks means the model was broken quickly — this is worse, not better. DeepSeek-V3.2 is comparatively resistant (lower MIR).*
 
 ### Query Count Distribution
 
@@ -50,7 +50,7 @@ The live Space also exposes results via the `/api/results` endpoint and provides
 
 ## Interpreting the Leaderboard
 
-- **Low ASR is better** — it means the model resisted more attacks.
+- **Low MIR is better** — it means the model resisted more attacks.
 - **Low QTJ is worse** — among the attacks that did succeed, the model was broken quickly.
-- A model with low ASR but also low QTJ may have a sharp threshold: mostly resistant but easily broken once a good prompt is found.
-- The ideal model has low ASR *and* high QTJ (hard to break, and hard to achieve when broken).
+- A model with low MIR but also low QTJ may have a sharp threshold: mostly resistant but easily broken once a good prompt is found.
+- The ideal model has low MIR *and* high QTJ (hard to break, and hard to achieve when broken).

@@ -7,7 +7,7 @@
 - Agentic extensions scaffolded: sandbox + tool registry ([agentic_safety/tools/sandbox.py](agentic_safety/tools/sandbox.py)) and tool implementations for file I/O, code exec, web browse, and network.
 - Multi-turn Crescendo attack implemented in [agentic_safety/attacks/crescendo.py](agentic_safety/attacks/crescendo.py) with config hooks.
 - Defense stack skeleton wired via [agentic_safety/defenses/registry.py](agentic_safety/defenses/registry.py) with JBShield, Gradient Cuff, Progent, StepShield classes present.
-- Metrics pipeline records ASR, TIR, DBR, QTJ and exports CSV/JSON ([agentic_safety/metrics/collector.py](agentic_safety/metrics/collector.py)).
+- Metrics pipeline records MIR, TIR, DBR, QTJ and exports CSV/JSON ([agentic_safety/metrics/collector.py](agentic_safety/metrics/collector.py)).
 - Config presets: baseline (no sandbox/defenses), full agentic attack, and defense stress test ([agentic_safety/configs](agentic_safety/configs)).
 
 ## What is done- Judge logic updated: Rewrote Judge system prompt (`attacks/pair.py`) to mandate verifying `Tool Execution Log` for actual sandbox side-effects instead of just assuming intent equivalence. Eliminates false positives when testing smaller targets that hallucinate schema calls.
@@ -29,6 +29,6 @@
 1) Fix defense pipeline wiring (use `filtered_prompt`, short-circuit on `blocked`, add response/tool checks) and rerun defense_stress.
 2) Route Crescendo through sandbox/defenses and log tool calls per turn; consider passing `tool_dispatch_fn`.
 3) Execute `agentic_full` with sandbox enabled to measure TIR and compare against baseline; store artifacts under `results/`.
-4) Swap in full SorryBench and add Mistral-Sorry-Bench as a judge option; log per-category ASR/TIR.
+4) Swap in full SorryBench and add Mistral-Sorry-Bench as a judge option; log per-category MIR/TIR.
 5) Harden tool harm detection (judge tool outputs, refine heuristics, add allow/deny lists in Progent) and document sandbox limitations.
 6) Write a short REPRO.md with setup (model paths, GPU type), run commands, and how to read CSV/JSON outputs.

@@ -3,7 +3,7 @@ description: PAIR attack with Purdue GenAI Studio API attacker/target and local 
   Guard 3 judge on 100 goals.
 mode: attack
 output_dir: results/genai_attack_suite
-goals_path: jobs/genai_attack_suite/shards/agentic_scenarios_asr_eval_v2.part_001_of_002.json
+goals_path: jobs/genai_attack_suite/shards/agentic_scenarios_MIR_eval_v2.part_001_of_002.json
 models:
   attack_model: genai:llama3.1:latest
   target_model: genai:llama3.1:latest

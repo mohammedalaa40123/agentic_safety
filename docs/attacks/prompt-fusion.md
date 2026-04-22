@@ -45,5 +45,5 @@ attack_config:
 ## Notes
 
 - Implemented in `attacks/prompt_fusion.py`
-- Small-N runs show near-100% ASR but sample sizes are too small for reliable benchmark comparison
+- Small-N runs show near-100% MIR but sample sizes are too small for reliable benchmark comparison
 - Not included in the strict PAIR mini-benchmark; used for supplementary analysis

@@ -106,7 +106,7 @@ nav:
       - StepShield: defenses/stepshield.md
   - Evaluation:
       - Benchmark Methodology: evaluation/index.md
-      - Metrics (ASR/TIR/DBR/QTJ): evaluation/metrics.md
+      - Metrics (MIR/TIR/DBR/QTJ): evaluation/metrics.md
       - Results & Leaderboard: evaluation/results.md
       - Reproducibility: evaluation/reproducibility.md
   - Providers:

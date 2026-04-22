@@ -317,8 +317,8 @@ def chart_mir_by_model(data: Dict[str, float], out_path: str) -> None:
     bars = ax.bar(models, values, color=colors, width=0.55,
                   edgecolor="white", linewidth=0.5, zorder=3)
     ax.set_ylim(0, 110)
-    ax.set_ylabel("Attack Success Rate (%)")
-    ax.set_title("PAIR Attack Success Rate by Target Model (No Defense)")
+    ax.set_ylabel("Malicious Intent Rate (%)")
+    ax.set_title("PAIR Malicious Intent Rate by Target Model (No Defense)")
     ax.yaxis.grid(True, zorder=0, alpha=0.6)
     ax.set_axisbelow(True)
     ax.spines["top"].set_visible(False)
@@ -383,7 +383,7 @@ def chart_mir_by_owasp(data: Dict[str, Dict[str, float]],
     ax.set_xticklabels(labels, fontsize=8.5, rotation=30,
                        ha="right", rotation_mode="anchor")
     ax.set_ylim(0, 120)
-    ax.set_ylabel("Attack Success Rate (%)")
+    ax.set_ylabel("Malicious Intent Rate (%)")
     title = "MIR by OWASP Agentic AI Top-10 Category (PAIR, No Defense)"
     if ext_data:
         title += "  [▦ = small/older models]"
@@ -504,7 +504,7 @@ def chart_query_efficiency(data: Dict[str, Dict[str, float]],
         )
 
     ax.set_xlabel("Avg Queries to Jailbreak (QTJ)")
-    ax.set_ylabel("Attack Success Rate (%)")
+    ax.set_ylabel("Malicious Intent Rate (%)")
     ax.set_title("Query Efficiency vs MIR (PAIR, No Defense)")
     ax.set_xlim(left=0)
     ax.set_ylim(0, 115)

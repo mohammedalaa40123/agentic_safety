@@ -16,7 +16,7 @@ This framework provides a repeatable evaluation harness that tests jailbreak att
 | [🗺️ Threat Model](threat-model/index.md) | OWASP Agentic AI Top-10 taxonomy, full attack surface analysis |
 | [⚔️ Attacks](attacks/index.md) | PAIR, Crescendo, Prompt Fusion, and Hybrid method documentation |
 | [🛡️ Defenses](defenses/index.md) | JBShield, Gradient Cuff, Progent, StepShield — how each works |
-| [📊 Evaluation](evaluation/index.md) | Benchmark methodology, metrics (ASR/TIR/DBR/QTJ), leaderboard |
+| [📊 Evaluation](evaluation/index.md) | Benchmark methodology, metrics (MIR/TIR/DBR/QTJ), leaderboard |
 | [🌐 Providers](providers/index.md) | Cloud, local, and HPC provider setup |
 | [⚡ Getting Started](getting-started/quickstart.md) | Environment setup, install, and first run |
 | [🏗️ Architecture](architecture/system-overview.md) | System wiring, execution flows, threat-defense model |
@@ -26,9 +26,9 @@ This framework provides a repeatable evaluation harness that tests jailbreak att
 
 > Strict PAIR attack · No defenses · 4-model core set · Consistent Llama-3.3-70B judge
 
-![ASR by Model](assets/charts/asr_by_model.png)
+![MIR by Model](assets/charts/MIR_by_model.png)
 
-| Model | ASR | QTJ |
+| Model | MIR | QTJ |
 |-------|-----|-----|
 | Llama-3.3-70B | 83.7% | ~3.0 |
 | DeepSeek-R1-70B | 83.2% | ~3.0 |

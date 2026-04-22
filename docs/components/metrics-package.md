@@ -6,7 +6,7 @@ The metrics package standardizes experiment scoring and output.
 
 | File | Purpose |
 | --- | --- |
-| metrics/asr.py | Attack Success Rate metric logic. |
+| metrics/MIR.py | Malicious Intent Rate metric logic. |
 | metrics/tir.py | Tool Invocation Rate metric logic. |
 | metrics/dbr.py | Defense Bypass Rate metric logic. |
 | metrics/qtj.py | Query-To-Jailbreak metric logic. |

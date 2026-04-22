@@ -48,7 +48,7 @@ IGNORE_PATTERNS = [
     "data/agentic_scenarios_100*.json",
     "data/agentic_scenarios_20.json",
     "data/agentic_scenarios_5_safe.json",
-    "data/agentic_scenarios_asr_eval*.json",
+    "data/agentic_scenarios_MIR_eval*.json",
     "data/agentic_scenarios_smoke*.json",
     "data/agentic_scenarios_top10.json",
     "data/smoke_jailbroken_*.json",

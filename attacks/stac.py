@@ -17,7 +17,7 @@ Algorithm (from the paper):
      to achieve the harmful goal.
 
 Attack Type: Agentic tool-chain poisoning (black-box)
-Key Metric: 80%+ ASR on multi-step agents with per-step filters
+Key Metric: 80%+ MIR on multi-step agents with per-step filters
 """
 
 from __future__ import annotations

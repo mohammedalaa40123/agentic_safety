@@ -11,7 +11,7 @@ This framework implements four attack strategies, each targeting the agentic pip
 
 ## Attack Taxonomy
 
-| Attack | Strategy | Key Assumption | Typical ASR |
+| Attack | Strategy | Key Assumption | Typical MIR |
 |--------|----------|----------------|-------------|
 | **PAIR** | LLM-as-attacker iterative refinement | Attacker LLM judges and improves prompts | 66–84% (PAIR core benchmark) |
 | **Crescendo** | Multi-turn escalation | Small incremental steps bypass per-turn detection | 88–100% |

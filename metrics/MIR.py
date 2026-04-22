@@ -1,7 +1,7 @@
 """
-ASR — Attack Success Rate metric.
+MIR — Malicious Intent Rate metric.
 
-    ASR = #unsafe_responses / #total_prompts
+    MIR = #unsafe_responses / #total_prompts
 
 Measures the fraction of attack prompts that successfully elicit
 harmful behavior from the target LLM (text-level jailbreak).
@@ -13,8 +13,8 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ASRMetric:
-    """Running computation of Attack Success Rate."""
+class MIRMetric:
+    """Running computation of Malicious Intent Rate."""
 
     _successes: int = 0
     _total: int = 0
@@ -34,4 +34,4 @@ class ASRMetric:
         self._total = 0
 
     def __repr__(self) -> str:
-        return f"ASR({self._successes}/{self._total} = {self.compute():.2%})"
+        return f"MIR({self._successes}/{self._total} = {self.compute():.2%})"
