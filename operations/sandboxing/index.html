@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://example.github.io/agentic_safety/operations/sandboxing/">
+        <link rel="canonical" href="https://mohammedalaa40123.github.io/agentic_safety/operations/sandboxing/">
       
       
         <link rel="prev" href="../experiments/">
@@ -185,6 +185,18 @@
       
     
     
+      <div class="md-header__source">
+        <a href="https://github.com/mohammedalaa40123/agentic_safety" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
   </nav>
   
 </header>
@@ -218,6 +230,18 @@
     </a>
     Agentic Safety Evaluation Framework
   </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mohammedalaa40123/agentic_safety" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -944,10 +968,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#code-execution-isolation" class="md-nav__link">
+  <a href="#supported-sandbox-tools" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Code execution isolation
+        Supported sandbox tools
       
     </span>
   </a>
@@ -955,10 +979,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recommended-secure-settings" class="md-nav__link">
+  <a href="#code-execution-backends" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recommended secure settings
+        Code execution backends
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-sandbox-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended sandbox settings
       
     </span>
   </a>
@@ -977,10 +1012,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fail-closed-mode" class="md-nav__link">
+  <a href="#fail-closed-behavior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fail-closed mode
+        Fail-closed behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sandbox-and-agentic-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sandbox and agentic mode
       
     </span>
   </a>
@@ -1011,6 +1057,34 @@
     
   
     Publishing to GitHub Pages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hf-space-launch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deploy to Hugging Face Spaces
   
 
     
@@ -1175,10 +1249,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#code-execution-isolation" class="md-nav__link">
+  <a href="#supported-sandbox-tools" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Code execution isolation
+        Supported sandbox tools
       
     </span>
   </a>
@@ -1186,10 +1260,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recommended-secure-settings" class="md-nav__link">
+  <a href="#code-execution-backends" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recommended secure settings
+        Code execution backends
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-sandbox-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended sandbox settings
       
     </span>
   </a>
@@ -1208,10 +1293,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fail-closed-mode" class="md-nav__link">
+  <a href="#fail-closed-behavior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fail-closed mode
+        Fail-closed behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sandbox-and-agentic-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sandbox and agentic mode
       
     </span>
   </a>
@@ -1234,33 +1330,46 @@
                   
 
 
+  
+  
+
 
 <h1 id="sandbox-isolation">Sandbox Isolation<a class="headerlink" href="#sandbox-isolation" title="Permanent link">&para;</a></h1>
-<h2 id="code-execution-isolation">Code execution isolation<a class="headerlink" href="#code-execution-isolation" title="Permanent link">&para;</a></h2>
-<p>Code execution is handled by tools/code_exec.py and supports:</p>
+<p>The sandbox layer enables tool-based agentic workflows while limiting harmful activity.</p>
+<h2 id="supported-sandbox-tools">Supported sandbox tools<a class="headerlink" href="#supported-sandbox-tools" title="Permanent link">&para;</a></h2>
 <ul>
-<li>auto: prefers bwrap when present.</li>
-<li>bwrap: requires bubblewrap namespace isolation.</li>
-<li>none: local execution path.</li>
+<li><code>file_io</code>: file read/write operations inside the sandbox</li>
+<li><code>code_exec</code>: code execution with optional isolation</li>
+<li><code>web_browse</code>: web browsing simulation or controlled web requests</li>
+<li><code>network</code>: network access control when enabled</li>
 </ul>
-<h2 id="recommended-secure-settings">Recommended secure settings<a class="headerlink" href="#recommended-secure-settings" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="nt">sandbox</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">  </span><span class="nt">tools</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">file_io</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">code_exec</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">web_browse</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">code_exec_backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bwrap</span>
-<span class="w">  </span><span class="nt">code_exec_require_isolation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">  </span><span class="nt">code_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-<span class="w">  </span><span class="nt">max_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-</code></pre></div>
+<h2 id="code-execution-backends">Code execution backends<a class="headerlink" href="#code-execution-backends" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>auto</code>: prefer Bubblewrap if available, otherwise fallback when safe</li>
+<li><code>bwrap</code>: explicit Bubblewrap isolation</li>
+<li><code>none</code>: disable isolated execution and use local fallback behavior</li>
+</ul>
+<h2 id="recommended-sandbox-settings">Recommended sandbox settings<a class="headerlink" href="#recommended-sandbox-settings" title="Permanent link">&para;</a></h2>
+<p><code>yaml
+sandbox:
+  enabled: true
+  tools: [file_io, code_exec, web_browse]
+  code_exec_backend: bwrap
+  code_exec_require_isolation: true
+  code_timeout: 10
+  max_steps: 5</code></p>
 <h2 id="runtime-protections">Runtime protections<a class="headerlink" href="#runtime-protections" title="Permanent link">&para;</a></h2>
+<p>The sandbox implements runtime protections for code execution:</p>
 <ul>
-<li>CPU limit via RLIMIT_CPU.</li>
-<li>Memory limit via RLIMIT_AS.</li>
-<li>Output file size limit via RLIMIT_FSIZE.</li>
-<li>Network unshared when bwrap backend is active.</li>
+<li>CPU limits via <code>RLIMIT_CPU</code></li>
+<li>memory limits via <code>RLIMIT_AS</code></li>
+<li>output file size limits via <code>RLIMIT_FSIZE</code></li>
+<li>network namespace isolation when Bubblewrap is available</li>
 </ul>
-<h2 id="fail-closed-mode">Fail-closed mode<a class="headerlink" href="#fail-closed-mode" title="Permanent link">&para;</a></h2>
-<p>If no isolation backend is available and code_exec_require_isolation is true, code execution is blocked rather than falling back to local execution.</p>
+<h2 id="fail-closed-behavior">Fail-closed behavior<a class="headerlink" href="#fail-closed-behavior" title="Permanent link">&para;</a></h2>
+<p>If <code>code_exec_require_isolation</code> is enabled and the requested isolation backend is unavailable, the system blocks code execution instead of silently falling back.</p>
+<h2 id="sandbox-and-agentic-mode">Sandbox and agentic mode<a class="headerlink" href="#sandbox-and-agentic-mode" title="Permanent link">&para;</a></h2>
+<p>Agentic mode uses sandbox tools to evaluate a target model's ability to achieve a goal through tool use. In malicious categories, any successful sandbox tool call is treated as a jailbreak success.</p>
 
 
 
