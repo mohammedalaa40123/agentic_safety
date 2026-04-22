@@ -1,0 +1,154 @@
+{
+  "benchmark": {
+    "attack": "pair",
+    "defense": "none",
+    "judge_set": [
+      "genai:llama3.3:70b",
+      "genai_rcac:llama3.3:70b",
+      "ollama:nemotron-3-super"
+    ],
+    "core_models": [
+      "Llama-3.3-70B",
+      "DeepSeek-R1-70B",
+      "DeepSeek-R1-14B",
+      "DeepSeek-V3.2"
+    ],
+    "total_records": 1004,
+    "per_model_n": {
+      "DeepSeek-R1-14B": 337,
+      "DeepSeek-R1-70B": 333,
+      "Llama-3.3-70B": 283,
+      "DeepSeek-V3.2": 51
+    }
+  },
+  "asr_by_model": {
+    "DeepSeek-R1-14B": 75.96439169139467,
+    "DeepSeek-R1-70B": 83.18318318318319,
+    "Llama-3.3-70B": 83.74558303886926,
+    "DeepSeek-V3.2": 64.70588235294117
+  },
+  "asr_by_category": {
+    "AAI01-BrokenAccessControl": {
+      "DeepSeek-V3.2": 80.0,
+      "DeepSeek-R1-14B": 80.0,
+      "DeepSeek-R1-70B": 60.0
+    },
+    "AAI02-PromptInjection": {
+      "DeepSeek-V3.2": 80.0,
+      "DeepSeek-R1-14B": 80.0,
+      "DeepSeek-R1-70B": 60.0
+    },
+    "AAI03-ExcessiveAgency": {
+      "DeepSeek-V3.2": 20.0,
+      "DeepSeek-R1-14B": 20.0,
+      "DeepSeek-R1-70B": 20.0
+    },
+    "AAI04-ModelHallucination": {
+      "DeepSeek-V3.2": 60.0,
+      "DeepSeek-R1-14B": 50.0,
+      "DeepSeek-R1-70B": 60.0
+    },
+    "AAI05-ImpactChain": {
+      "DeepSeek-V3.2": 60.0,
+      "DeepSeek-R1-14B": 60.0,
+      "DeepSeek-R1-70B": 40.0
+    },
+    "AAI06-MemoryContextPoisoning": {
+      "DeepSeek-V3.2": 80.0,
+      "DeepSeek-R1-14B": 100.0,
+      "DeepSeek-R1-70B": 80.0
+    },
+    "AAI07-InsecureOrchestration": {
+      "DeepSeek-V3.2": 80.0,
+      "DeepSeek-R1-14B": 75.0,
+      "DeepSeek-R1-70B": 80.0
+    },
+    "AAI08-ResourceExhaustion": {
+      "DeepSeek-V3.2": 60.0,
+      "DeepSeek-R1-14B": 60.0,
+      "DeepSeek-R1-70B": 60.0
+    },
+    "AAI09-SupplyChain": {
+      "DeepSeek-V3.2": 60.0,
+      "DeepSeek-R1-14B": 50.0,
+      "DeepSeek-R1-70B": 60.0
+    },
+    "AAI10-KnowledgePoisoning": {
+      "DeepSeek-V3.2": 80.0,
+      "DeepSeek-R1-14B": 66.66666666666666,
+      "DeepSeek-R1-70B": 60.0
+    },
+    "agent": {
+      "DeepSeek-R1-14B": 77.03180212014135,
+      "DeepSeek-R1-70B": 87.63250883392226,
+      "Llama-3.3-70B": 83.74558303886926,
+      "DeepSeek-V3.2": 0.0
+    },
+    "owasp_aai001": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai002": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai003": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai005": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai006": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai007": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai009": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai011": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai012": {
+      "DeepSeek-R1-14B": 100.0
+    },
+    "owasp_aai014": {
+      "DeepSeek-R1-14B": 100.0
+    }
+  },
+  "tool_quality": {
+    "DeepSeek-R1-14B": {
+      "correct": 76.10092943466896,
+      "wrong": 23.899070565331044
+    },
+    "DeepSeek-R1-70B": {
+      "correct": 78.80602607098105,
+      "wrong": 21.19397392901894
+    },
+    "Llama-3.3-70B": {
+      "correct": 74.7044251602896,
+      "wrong": 25.295574839710387
+    },
+    "DeepSeek-V3.2": {
+      "correct": 77.62375218064862,
+      "wrong": 22.376247819351377
+    }
+  },
+  "query_efficiency": {
+    "DeepSeek-R1-14B": {
+      "avg_queries": 2.8100890207715135,
+      "asr": 75.96439169139467
+    },
+    "DeepSeek-R1-70B": {
+      "avg_queries": 2.5015015015015014,
+      "asr": 83.18318318318319
+    },
+    "Llama-3.3-70B": {
+      "avg_queries": 2.371024734982332,
+      "asr": 83.74558303886926
+    },
+    "DeepSeek-V3.2": {
+      "avg_queries": 2.4901960784313726,
+      "asr": 64.70588235294117
+    }
+  }
+}

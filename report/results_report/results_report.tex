@@ -1,0 +1,64 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{Analysis of Agentic Safety Experiments (\texttt{results/} directory)}
+\author{Research Report}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+This report details the evaluation of models against autonomous attacks focusing strictly on the \texttt{results/} dataset pipeline. The analysis extracts \textbf{294} records spanning \textbf{3} models.
+
+\section{Overall Attack Success Rates}
+Figure~\ref{fig:asr} compares the Attack Success Rate (ASR) of different models under varying attack structures.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{asr_comparison.png}
+    \caption{Attack Success Rate (ASR) Comparison}
+    \label{fig:asr}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model} & \textbf{Crescendo} & \textbf{Pair} \\
+        \midrule
+        DeepSeek-R1-14B & 66.0\% & 63.6\% \\
+        DeepSeek-R1-70B & 66.0\% & 58.0\% \\
+        DeepSeek-V3.2 & 58.0\% & 66.0\% \\
+        \bottomrule
+    \end{tabular}
+    \caption{Exact ASR values per model categorized by attack methodology.}
+    \label{tab:asr}
+\end{table}
+
+\section{Vulnerability by Category}
+Agentic capabilities are prone to different typologies of attacks. The heatmap (Figure~\ref{fig:heatmap}) maps susceptibility to Top AAI categories.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{asr_category_heatmap.png}
+    \caption{Vulnerability Heatmap across Agentic AI categories.}
+    \label{fig:heatmap}
+\end{figure}
+
+\section{Tool Execution Quality}
+Autonomous exploits often rely on intermediate tool chains. Tool Execution Quality determines whether models adhere to functional boundaries.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{tool_quality.png}
+    \caption{Tool Call Quality execution correctness across core tested models.}
+    \label{fig:tool}
+\end{figure}
+
+\end{document}
