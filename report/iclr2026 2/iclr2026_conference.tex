@@ -302,26 +302,26 @@ The resulting metrics facilitate deep analytical insights, structured in Table~\
 \end{tabularx}
 \end{table}
 
+\subsection{Discussion}
+\subsubsection{Architectural Vulnerabilities in Reasoning vs. Instruction Tuning}
+The divergence in vulnerability profiles between the DeepSeek-R1 family and the Llama-3 family highlights a critical trade-off in modern LLM architecture. Reasoning-optimised models like DeepSeek-R1-70B exhibit exceptionally high susceptibility to PAIR attacks (87.0\% MIR). This is likely because chain-of-thought (CoT) pathways inherently expand the intermediate token space where adversarial logic can embed itself. By forcing the model to ``think through'' the prompt step-by-step, iterative refinement attacks can hijack intermediate reasoning steps before the model's final safety classifier is triggered. 
+
+\subsubsection{The Syntactic vs. Semantic Gap in Smaller Models}
+Conversely, instruction-tuned models like Llama-3.3-70B are highly vulnerable to Crescendo (100\% MIR). Their alignment heavily penalizes ignoring user constraints, forcing the model to maintain conversational consistency. Once the attacker establishes a seemingly benign premise in early turns, the model's own instruction-adherence becomes the vehicle for its compromise, leading to a complete bypass of intent-based guardrails.
+
+Finding 4 reveals a concerning operational hazard for edge-deployed or quantized models: smaller architectures (e.g., Llama-3.2-3B) exhibit disproportionately high Tool Invocation Rates (TIR) even when their overall MIR is moderate. This indicates a breakdown in semantic alignment under adversarial pressure. When partially jailbroken, smaller models suffer from ``syntactic manipulation drift''---they lose the semantic thread of safety and default to syntactically completing the nearest tool-call pattern. This proves that relying on the degraded reasoning capabilities of small models as a pseudo-safety mechanism is fundamentally flawed.
+
 % =============================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 
-This project introduces the Agentic Safety Evaluator, an open-source, extensible framework for
-evaluating jailbreak attacks on tool-using LLM agents. The primary contribution
-is a comprehensive benchmarking harness that closes the gap between text-level jailbreak
-evaluation and concrete tool-execution impact measurement. Crucially, this work
-extends existing state-of-the-art attack paradigms---namely PAIR and Crescendo---by
-migrating them from static, single-turn conversational settings into dynamic,
-multi-step agentic environments. By executing these attacks within secure sandboxes,
-this framework measures definitive intent to harm via tool invocations rather than relying solely on semantic
-compliance. Furthermore, the repository natively supports community contributions to dynamically scale safety analysis tooling.
+This project introduces the Agentic Safety Evaluator, an open-source, extensible framework for evaluating jailbreak attacks on tool-using LLM agents. The primary contribution is a comprehensive benchmarking harness that closes the gap between text-level jailbreak evaluation and concrete tool-execution impact measurement. Crucially, this work extends existing state-of-the-art attack paradigms---namely PAIR and Crescendo---by migrating them from static, single-turn conversational settings into dynamic, multi-step agentic environments. By executing these attacks within secure sandboxes, this framework measures definitive intent to harm via tool invocations rather than relying solely on semantic compliance. Furthermore, the repository natively supports community contributions to dynamically scale safety analysis tooling.
 
-The extensive experimental analysis of 3,462~trials across nine target models yields
-highly significant insights into the fundamental flaws of reasoning-chain optimizations and scale-dependent tool compliance risks. These findings carry direct implications for deploying autonomous LLM agents
-in security-critical domains: a model's robustness against single-turn
-jailbreaks acts as a poor predictor for its resistance against multi-turn
-agentic attacks. Tool-level misuse metrics must strictly complement compliance scoring in any responsible model deployment regime.
+The deployment of autonomous agents necessitates a paradigm shift in how the security community defines and measures LLM vulnerabilities. Historically, red-teaming has equated safety with a model's textual refusal to engage with harmful prompts. However, the Agentic Safety Evaluator demonstrates that this NLP-centric approach is dangerously insufficient for tool-using pipelines. By isolating multi-step execution within secure sandboxes and introducing the Malicious Intent Rate (MIR), this framework provides the first reproducible lens into execution-level compromise. 
 
+The extensive experimental analysis of 3,462~trials across nine target models yields highly significant insights into the fundamental flaws of reasoning-chain optimizations and scale-dependent tool compliance risks. The revelation that reasoning-chain optimizations actively degrade resilience against iterative prompt refinement fundamentally challenges current scaling laws for secure agentic deployments. Furthermore, by modularizing both state-of-the-art attacks and nascent defense mechanisms (such as concept-level activation analysis and privilege control), this benchmark provides a critical, standardized testbed. 
+
+These findings carry direct implications for deploying autonomous LLM agents in security-critical domains: a model's robustness against single-turn jailbreaks acts as a poor predictor for its resistance against multi-turn agentic attacks. It forces the evaluation of AI safety to move beyond text compliance, demanding that future alignment techniques, adversarial defenses, and hybrid jailbreak mitigations are proven robust at the point of action. Tool-level misuse metrics must strictly complement compliance scoring in any responsible model deployment regime.
 \paragraph{Future work.}
 Planned extensions include: (1)~empirical evaluation of the four implemented
 defense modules (JBShield, GradientCuff, Progent, StepShield) under adaptive
@@ -329,6 +329,17 @@ attacks; (2)~scaling the goal dataset to cover emerging attack vectors
 such as tool-chain poisoning~\citep{stac2025} and transferring pre-generated GCG payloads into live testing sequences.
 
 % =============================================================================
+
+\subsubsection*{LLM Acknowledgement}
+
+LLM assistance (Claude Sonnet 4.6, Codex GPT-5.4, Gemini 3 Pro) was used for:
+(1)~code scaffolding for the evaluation framework, as the entire project is centered around evaluating LLM safety;
+(2)~generating the adversarial dataset of evaluation goals;
+(3)~serving as an automated judge to evaluate attacks and score target model responses;
+(4)~documentation editing and LaTeX formatting for this report.
+All experimental design, methodology decisions, result analysis, and conclusions
+are strictly the work of the author.
+
 \subsubsection*{Ethics Statement}
 
 All adversarial evaluation scenarios use deliberately unrealistic goals
@@ -340,15 +351,6 @@ and does not provide instructions for real-world attacks.  The authors follow
 responsible disclosure practices and release this framework to support
 red-teaming research that improves the safety of deployed LLM agents.
 
-\subsubsection*{LLM Acknowledgement}
-
-LLM assistance (Claude Sonnet 4.6, Codex GPT-5.4, Gemini 3 Pro) was used for:
-(1)~code scaffolding for the evaluation framework, as the entire project is centered around evaluating LLM safety;
-(2)~generating the adversarial dataset of evaluation goals;
-(3)~serving as an automated judge to evaluate attacks and score target model responses;
-(4)~documentation editing and LaTeX formatting for this report.
-All experimental design, methodology decisions, result analysis, and conclusions
-are strictly the work of the author.
 
 % =============================================================================
 \bibliography{references}
