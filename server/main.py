@@ -13,8 +13,9 @@ from .routes import providers, datasets, eval_, results
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from .jobs import start_queue_runner
+    await start_queue_runner()
     yield
-    # Cancel any running jobs on shutdown
     from .jobs import cancel_all_on_shutdown
     await cancel_all_on_shutdown()
 

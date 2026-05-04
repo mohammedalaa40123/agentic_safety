@@ -32,6 +32,37 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# ── Sequential job queue ──────────────────────────────────────────────────────
+# Only one job runs at a time; new submissions are placed in this queue and
+# processed FIFO by the single _queue_runner background task.
+
+_job_queue: asyncio.Queue["Job"] = asyncio.Queue()
+_runner_task: Optional[asyncio.Task] = None  # type: ignore[type-arg]
+
+
+async def start_queue_runner() -> None:
+    """Start the singleton background runner (call once on app startup)."""
+    global _runner_task
+    if _runner_task is None or _runner_task.done():
+        _runner_task = asyncio.create_task(_queue_runner())
+        logger.info("Sequential job queue runner started.")
+
+
+async def _queue_runner() -> None:
+    """Drain _job_queue one job at a time, forever."""
+    while True:
+        job: "Job" = await _job_queue.get()
+        try:
+            if job.status == "cancelled":
+                logger.info(f"Job {job.id} was cancelled before it started; skipping.")
+                continue
+            await _run_job(job)
+        except Exception:
+            logger.exception(f"Unhandled error in queue runner for job {job.id}")
+        finally:
+            _job_queue.task_done()
+
+
 # ── Job model ─────────────────────────────────────────────────────────────────
 
 JobStatus = str  # "queued" | "running" | "completed" | "failed" | "cancelled"
@@ -242,11 +273,16 @@ async def launch_job(
         dataset_path=dataset_path,
     )
     _jobs[job_id] = job
-    asyncio.create_task(_run_job(job))
+    await _job_queue.put(job)
+    logger.info(f"Job {job_id} queued (queue size ≈ {_job_queue.qsize()})")
     return job
 
 
 async def _run_job(job: Job) -> None:
+    # Guard: job may have been cancelled while waiting in the queue
+    if job.status == "cancelled":
+        return
+
     job.status = "running"
     job.started_at = datetime.now(timezone.utc)
     await _broadcast(job, {"type": "status", "status": "running"})
