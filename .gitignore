@@ -20,7 +20,10 @@ literature/literature_map.md
 eval_plan.md
 .agents/
 .claude/
+literature/
 presentation/
-report/
+report/*
 PROJECT_PROGRESS.md
 TODO_CLAUDE_AGENT.md
+scripts/
+.pytest_cache
