@@ -160,6 +160,20 @@ def run_agentic_loop(target_lm, sandbox: AgenticSandbox, hf_tools: List[Dict[str
 
         messages.append({"role": "assistant", "content": last_response})
 
+        # Layer 2: response-level defense (e.g. StepShield) — checks each LLM turn before tool dispatch
+        if defense_registry is not None:
+            dres = defense_registry.filter_response(goal, last_response)
+            if dres.blocked:
+                stages.append({
+                    "step": step + 1,
+                    "thought": "",
+                    "action": "blocked_by_defense_response",
+                    "arguments": {},
+                    "observation": dres.reason,
+                })
+                last_response = f"[BLOCKED by {dres.defense_name}] {dres.reason}"
+                break
+
         thought_text = re.sub(r"<tool_call>.*?</tool_call>", "", last_response, flags=re.DOTALL)
         thought_text = re.sub(r"```json\s*\{.*?\}\s*```", "", thought_text, flags=re.DOTALL).strip()
 

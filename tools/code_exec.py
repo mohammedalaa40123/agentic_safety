@@ -39,6 +39,7 @@ class CodeExecTool(ToolBase):
         self._bwrap_path = shutil.which("bwrap")
         self._docker_path = shutil.which("docker")
         self._docker_daemon_ok: bool | None = None  # lazily checked
+        self._bwrap_functional: bool | None = None  # lazily tested at runtime
         if sandbox_root is None:
             self._tmpdir = tempfile.mkdtemp(prefix="agentic_code_")
             self.sandbox_root = self._tmpdir
@@ -62,16 +63,40 @@ class CodeExecTool(ToolBase):
                 self._docker_daemon_ok = False
         return self._docker_daemon_ok
 
+    def _bwrap_available(self) -> bool:
+        """Return True only if bwrap exists AND can actually execute in this environment."""
+        if not self._bwrap_path:
+            return False
+        if self._bwrap_functional is None:
+            try:
+                result = subprocess.run(
+                    [self._bwrap_path, "--unshare-net", "--tmpfs", "/tmp",
+                     "--ro-bind", "/usr", "/usr",
+                     shutil.which("true") or "/bin/true"],
+                    capture_output=True, timeout=5,
+                )
+                self._bwrap_functional = (result.returncode == 0)
+                if not self._bwrap_functional:
+                    logger.warning(
+                        "[CodeExec] bwrap probe failed (rc=%d): %s — "
+                        "will fall back to docker or local backend.",
+                        result.returncode, result.stderr[:200],
+                    )
+            except Exception as exc:
+                self._bwrap_functional = False
+                logger.warning("[CodeExec] bwrap probe exception: %s — disabling bwrap.", exc)
+        return self._bwrap_functional
+
     def _effective_backend(self) -> str:
         if self.isolation_backend in {"none", "local"}:
             return "local"
         if self.isolation_backend == "bwrap":
-            return "bwrap" if self._bwrap_path else "missing"
+            return "bwrap" if self._bwrap_available() else "missing"
         if self.isolation_backend == "docker":
             return "docker" if self._docker_available() else "missing"
         if self.isolation_backend == "auto":
             # Prefer bwrap (Linux), fall back to docker if daemon is running, else local
-            if self._bwrap_path:
+            if self._bwrap_available():
                 return "bwrap"
             if self._docker_available():
                 return "docker"
@@ -126,33 +151,25 @@ class CodeExecTool(ToolBase):
             self._bwrap_path,
             "--die-with-parent",
             "--new-session",
-            # Use explicit flags instead of --unshare-all to avoid --unshare-user
-            # and --unshare-cgroup, which require kernel.unprivileged_userns_clone=1
-            # (not available in HF Spaces / most container runtimes).
+            # Network and IPC isolation (no user namespace needed for these)
             "--unshare-net",
-            "--unshare-pid",
             "--unshare-ipc",
             "--unshare-uts",
-            "--proc",
-            "/proc",
-            "--dev",
-            "/dev",
-            "--tmpfs",
-            "/tmp",
-            "--dir",
-            "/work",
-            "--bind",
-            self.sandbox_root,
-            "/work",
-            "--chdir",
-            "/work",
-            "--setenv",
-            "HOME",
-            "/work",
-            "--setenv",
-            "PYTHONDONTWRITEBYTECODE",
-            "1",
+            # Use tmpfs for /proc and /tmp — avoids mounting real procfs (which
+            # requires user namespaces unavailable in HF Space / unprivileged containers).
+            "--tmpfs", "/proc",
+            "--tmpfs", "/tmp",
+            "--dir", "/work",
+            "--bind", self.sandbox_root, "/work",
+            "--chdir", "/work",
+            "--setenv", "HOME", "/work",
+            "--setenv", "PYTHONDONTWRITEBYTECODE", "1",
         ]
+
+        # Bind essential /dev files individually (avoids --dev which needs mount privs)
+        for dev_node in ["/dev/null", "/dev/zero", "/dev/urandom", "/dev/random"]:
+            if os.path.exists(dev_node):
+                cmd.extend(["--bind", dev_node, dev_node])
 
         ro_paths = ["/usr", "/bin", "/lib", "/lib64"]
         for path in ro_paths:
@@ -165,7 +182,7 @@ class CodeExecTool(ToolBase):
             cmd.extend(["--ro-bind", mock_etc, "/etc"])
         elif os.path.exists("/etc"):
             cmd.extend(["--ro-bind", "/etc", "/etc"])
-            
+
         mock_var_log = os.path.join(self.sandbox_root, "var", "log")
         if os.path.exists(mock_var_log):
             cmd.extend(["--bind", mock_var_log, "/var/log"])
