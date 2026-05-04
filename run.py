@@ -10,6 +10,7 @@ import csv
 import json
 import logging
 import os
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -26,6 +27,8 @@ from runner.sandbox import build_sandbox_components
 from runner.types import AttackOutcome
 
 logger = logging.getLogger("agentic_safety")
+
+_SAFE_ARTIFACT_TOKEN_RE = re.compile(r"[^A-Za-z0-9._-]+")
 
 
 @dataclass
@@ -64,6 +67,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--goal-indices", type=str, default=None,
                         help="Comma-separated goal indices to evaluate (e.g. '0,2,5'). Used by server queue.")
     return parser.parse_args()
+
+
+def _safe_artifact_token(value: str | None, fallback: str = "unknown") -> str:
+    """Normalize dynamic filename tokens so model IDs cannot create nested paths."""
+    raw = (value or "").strip()
+    if not raw:
+        return fallback
+    safe = _SAFE_ARTIFACT_TOKEN_RE.sub("_", raw).strip("._-")
+    return safe or fallback
 
 
 def _config_resolution_candidates(config_arg: str) -> List[str]:
@@ -425,10 +437,11 @@ def main() -> None:
         logger.info("[SANDBOX] Persistent sandbox warmed up at %s", cfg.sandbox.sandbox_root)
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    atk = cfg.models.attack_model
-    tgt = cfg.models.target_model
-    csv_path = os.path.join(cfg.output_dir, f"results_{cfg.experiment_name}_{atk}_{tgt}_{timestamp}.csv")
-    json_path = os.path.join(cfg.output_dir, f"results_{cfg.experiment_name}_{atk}_{tgt}_{timestamp}.json")
+    exp_token = _safe_artifact_token(cfg.experiment_name, fallback="run")
+    atk_token = _safe_artifact_token(cfg.models.attack_model)
+    tgt_token = _safe_artifact_token(cfg.models.target_model)
+    csv_path = os.path.join(cfg.output_dir, f"results_{exp_token}_{atk_token}_{tgt_token}_{timestamp}.csv")
+    json_path = os.path.join(cfg.output_dir, f"results_{exp_token}_{atk_token}_{tgt_token}_{timestamp}.json")
     log_run_header(logger, cfg, log_file, output_paths=f"CSV: {csv_path}\nJSON: {json_path}")
 
     wandb_run = _init_wandb(cfg)

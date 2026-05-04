@@ -21,3 +21,14 @@ class AttackOutcome:
     stages: List[Dict[str, Any]] = field(default_factory=list)
     defense_response: Optional[str] = None
     gcg_suffix: Optional[str] = None
+
+    # --- Three-tier correctness (Phase 2: addresses reviewer W2) ---
+    intent_compliance: Optional[bool] = None     # L1: judge-based intent
+    tool_engagement: Optional[bool] = None       # L2: correct tool invoked
+    execution_success: Optional[bool] = None     # L3: tool succeeded + harmful
+
+    # --- Multi-judge evaluation (Phase 1: addresses reviewer W1) ---
+    judge_scores: List[int] = field(default_factory=list)      # per-judge scores
+    judge_agreement: Optional[float] = None                    # inter-judge κ
+    majority_jailbroken: Optional[bool] = None                 # majority vote
+

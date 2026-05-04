@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import csv
 import logging
+import os
 import time
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional
@@ -256,6 +257,7 @@ class MetricsCollector:
             logger.warning("No records to export.")
             return
 
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         fieldnames = list(asdict(self.records[0]).keys())
         with open(path, "w", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -268,6 +270,7 @@ class MetricsCollector:
 
     def to_json(self, path: str) -> None:
         """Export summary + records to a JSON file."""
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         data = {
             "summary": self.summary(),
             "by_category": self.summary_by_category(),

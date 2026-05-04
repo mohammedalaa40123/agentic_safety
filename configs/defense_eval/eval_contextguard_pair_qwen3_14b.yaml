@@ -1,0 +1,38 @@
+experiment_name: defense_contextguard_pair_qwen3_14b
+description: 'Defense evaluation: contextguard against pair on qwen3:14b (50 CTF scenarios)'
+mode: attack
+output_dir: results/defense_eval/contextguard/pair_qwen3_14b
+goals_path: data/agentic_scenarios_owasp_top10_50.json
+models:
+  attack_model: genai:llama3.3:70b
+  target_model: genai:qwen3:14b
+  judge_model: genai:llama3.3:70b
+  attack_max_n_tokens: 2048
+  target_max_n_tokens: 1024
+  judge_max_n_tokens: 1024
+  attack_calls_per_minute: 20
+  target_calls_per_minute: 20
+  judge_calls_per_minute: 20
+sandbox:
+  enabled: true
+  persistent: true
+  tools:
+  - file_io
+  - code_exec
+  - web_browse
+  - network
+  max_steps: 5
+attacks:
+- name: pair
+  enabled: true
+  stop_on_success: false
+  params:
+    n_iterations: 5
+defenses:
+  enabled: true
+  active:
+  - contextguard
+  contextguard:
+    model_name: null
+logging:
+  verbose: true

@@ -97,6 +97,19 @@ export interface LeaderRow {
   n_malicious: number
 }
 
+export type LeaderboardGroupBy = 'combo' | 'model' | 'attack'
+
+export interface LeaderboardResponse {
+  rows: LeaderRow[]
+  total: number
+  limit: number
+  offset: number
+  has_more: boolean
+  group_by: LeaderboardGroupBy
+  sort_key: keyof LeaderRow | string
+  sort_dir: 'asc' | 'desc'
+}
+
 export interface DatasetScope {
   mode: 'full' | 'single' | 'range' | 'sample'
   index?: number
@@ -210,7 +223,33 @@ export const api = {
   deleteResult: (relPath: string) =>
     req<{ deleted: string }>('DELETE', `/api/results/${encodeURIComponent(relPath)}`),
 
-  getLeaderboard: () => req<LeaderRow[]>('GET', '/api/results/leaderboard'),
+  getLeaderboard: (params?: {
+    groupBy?: LeaderboardGroupBy
+    limit?: number
+    offset?: number
+    sortKey?: keyof LeaderRow
+    sortDir?: 'asc' | 'desc'
+    filterModel?: string
+    filterAttack?: string
+    filterDefense?: string
+  }): Promise<LeaderRow[] | LeaderboardResponse> => {
+    const q = new URLSearchParams()
+    if (params?.groupBy) q.set('group_by', params.groupBy)
+    if (params?.limit !== undefined) q.set('limit', String(params.limit))
+    if (params?.offset !== undefined) q.set('offset', String(params.offset))
+    if (params?.sortKey) q.set('sort_key', String(params.sortKey))
+    if (params?.sortDir) q.set('sort_dir', params.sortDir)
+    if (params?.filterModel) q.set('filter_target_model', params.filterModel)
+    if (params?.filterAttack) q.set('filter_attack_name', params.filterAttack)
+    if (params?.filterDefense) q.set('filter_defense_name', params.filterDefense)
+    const suffix = q.toString()
+    return req<LeaderboardResponse>('GET', `/api/results/leaderboard${suffix ? `?${suffix}` : ''}`).then((res) => {
+      // Backwards compatibility: callers that invoked getLeaderboard() without params
+      // expect an array. If no params were supplied, return the `rows` array directly.
+      if (!params) return res.rows
+      return res
+    })
+  },
 }
 
 // ── WebSocket helpers ─────────────────────────────────────────────────────────

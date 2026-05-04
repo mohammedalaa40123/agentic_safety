@@ -7,6 +7,7 @@ GET /api/results/{rel_path}   → get a specific result JSON or CSV file
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import os
 import re
@@ -15,7 +16,7 @@ import threading
 import time
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query, Request
 
 from server.config import RESULTS_DIR
 
@@ -31,6 +32,11 @@ _SYNC_LOCK = threading.Lock()
 _LAST_SYNC_TS = 0.0
 _SYNC_RETRY_SEC = int(os.getenv("HF_RESULTS_SYNC_RETRY_SEC", "120"))
 _SYNC_DONE = False
+
+_LEADERBOARD_CACHE_LOCK = threading.Lock()
+_LEADERBOARD_CACHE: Dict[str, Dict[str, Any]] = {}
+_LEADERBOARD_CACHE_SIG: Optional[str] = None
+_LEADERBOARD_CACHE_MAX_KEYS = int(os.getenv("LEADERBOARD_CACHE_MAX_KEYS", "64"))
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -239,6 +245,56 @@ def _extract_records(data: Any) -> List[Dict[str, Any]]:
     return []
 
 
+def _results_files_signature() -> str:
+    """Build a stable signature for all JSON result files.
+
+    Any add/update/delete in results will change this signature and invalidate
+    cached leaderboard aggregates.
+    """
+    h = hashlib.sha256()
+    entries: List[str] = []
+    for root, _, files in os.walk(RESULTS_DIR):
+        for fname in sorted(files):
+            if not fname.endswith(".json"):
+                continue
+            fpath = os.path.join(root, fname)
+            rel = os.path.relpath(fpath, RESULTS_DIR)
+            try:
+                st = os.stat(fpath)
+                entries.append(f"{rel}|{st.st_size}|{st.st_mtime_ns}")
+            except OSError:
+                continue
+    for item in entries:
+        h.update(item.encode("utf-8"))
+    return h.hexdigest()
+
+
+def _get_cached_rows(cache_key: str, sig: str) -> Optional[List[Dict[str, Any]]]:
+    global _LEADERBOARD_CACHE_SIG, _LEADERBOARD_CACHE
+    with _LEADERBOARD_CACHE_LOCK:
+        if _LEADERBOARD_CACHE_SIG != sig:
+            _LEADERBOARD_CACHE_SIG = sig
+            _LEADERBOARD_CACHE = {}
+            return None
+        payload = _LEADERBOARD_CACHE.get(cache_key)
+        if payload is None:
+            return None
+        return payload.get("rows")
+
+
+def _store_cached_rows(cache_key: str, sig: str, rows: List[Dict[str, Any]]) -> None:
+    global _LEADERBOARD_CACHE_SIG, _LEADERBOARD_CACHE
+    with _LEADERBOARD_CACHE_LOCK:
+        if _LEADERBOARD_CACHE_SIG != sig:
+            _LEADERBOARD_CACHE_SIG = sig
+            _LEADERBOARD_CACHE = {}
+        if len(_LEADERBOARD_CACHE) >= _LEADERBOARD_CACHE_MAX_KEYS:
+            oldest = next(iter(_LEADERBOARD_CACHE), None)
+            if oldest is not None:
+                _LEADERBOARD_CACHE.pop(oldest, None)
+        _LEADERBOARD_CACHE[cache_key] = {"rows": rows}
+
+
 @router.get("/summary")
 def results_summary() -> List[Dict[str, Any]]:
     """Return lightweight per-file metadata (model, attack, defense, MIR, count) without full records."""
@@ -280,119 +336,206 @@ def results_summary() -> List[Dict[str, Any]]:
 
 
 @router.get("/leaderboard")
-def results_leaderboard() -> List[Dict[str, Any]]:
-    """Aggregate all result files into per-(target_model, attack, defense) leaderboard rows.
+def results_leaderboard(
+    request: Request,
+    group_by: str = Query("combo", pattern="^(combo|model|attack)$"),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    sort_key: str = Query("MIR"),
+    sort_dir: str = Query("desc", pattern="^(asc|desc)$"),
+    target_model: str = Query("", alias="filter_target_model"),
+    attack_name: str = Query("", alias="filter_attack_name"),
+    defense_name: str = Query("", alias="filter_defense_name"),
+) -> Dict[str, Any]:
+    """Aggregate leaderboard rows with weighted metrics and pagination.
 
-    Each row includes: MIR, Task_Success, TIR, DBR, QTJ, avg_duration, avg_queries,
-    total_tool_calls, avg_correct_tool_calls, avg_wrong_tool_calls, plus model/attack/defense info.
+    group_by:
+    - combo  => per (target_model, attack_name, defense_name)
+    - model  => per target_model (metrics computed over all matching records)
+    - attack => per attack_name (metrics computed over all matching records)
     """
     _ensure_hf_results_mirrored()
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
-    # key → aggregated stats
-    groups: Dict[str, Dict[str, Any]] = {}
+    sig = _results_files_signature()
+    agg_key = "||".join([
+        group_by,
+        target_model,
+        attack_name,
+        defense_name,
+    ])
 
-    for root, _, files in os.walk(RESULTS_DIR):
-        for fname in sorted(files):
-            if not fname.endswith(".json"):
-                continue
-            fpath = os.path.join(root, fname)
-            try:
-                with open(fpath, encoding="utf-8") as f:
-                    data = json.load(f)
-                records = _extract_records(data)
-                if not records:
+    cached_rows = _get_cached_rows(agg_key, sig)
+    if cached_rows is not None:
+        rows = cached_rows
+    else:
+        rows = []
+
+        # key → aggregated stats
+        groups: Dict[str, Dict[str, Any]] = {}
+
+        for root, _, files in os.walk(RESULTS_DIR):
+            for fname in sorted(files):
+                if not fname.endswith(".json"):
                     continue
-                first = records[0]
+                fpath = os.path.join(root, fname)
+                try:
+                    with open(fpath, encoding="utf-8") as f:
+                        data = json.load(f)
+                    records = _extract_records(data)
+                    if not records:
+                        continue
+                    first = records[0]
 
-                # Determine file-level defaults (attack_model, judge_model come from first record)
-                file_attack_model = str(first.get("attack_model", "") or "")
-                file_judge_model  = str(first.get("judge_model",  "") or "")
+                    # Determine file-level defaults (attack_model, judge_model come from first record)
+                    file_attack_model = str(first.get("attack_model", "") or "")
+                    file_judge_model = str(first.get("judge_model", "") or "")
 
-                # Group EACH record by its own (target_model, attack_name, defense_name) so that
-                # multi-attack result files don't collapse everything under the first attack.
-                for rec in records:
-                    target_model = str(rec.get("target_model", "") or "unknown")
-                    attack_name  = str(rec.get("attack_name",  "") or "baseline")
-                    defense_name = str(rec.get("defense_name", "") or "none") or "none"
+                    # Group each record by the selected aggregation mode.
+                    for rec in records:
+                        rec_target_model = str(rec.get("target_model", "") or "unknown")
+                        rec_attack_name = str(rec.get("attack_name", "") or "baseline")
+                        rec_defense_name = str(rec.get("defense_name", "") or "none") or "none"
 
-                    key = f"{target_model}||{attack_name}||{defense_name}"
-                    if key not in groups:
-                        groups[key] = {
-                            "target_model": target_model,
-                            "attack_name": attack_name,
-                            "defense_name": defense_name,
-                            "attack_model": str(rec.get("attack_model", "") or file_attack_model),
-                            "judge_model":  str(rec.get("judge_model",  "") or file_judge_model),
-                            "files": [],
-                            "_recs": [],
-                        }
-                    rel = os.path.relpath(fpath, RESULTS_DIR)
-                    if rel not in groups[key]["files"]:
-                        groups[key]["files"].append(rel)
-                    groups[key]["_recs"].append(rec)
+                        if target_model and rec_target_model != target_model:
+                            continue
+                        if attack_name and rec_attack_name != attack_name:
+                            continue
+                        if defense_name and rec_defense_name != defense_name:
+                            continue
 
-            except Exception:
+                        if group_by == "model":
+                            key = rec_target_model
+                            row_target_model = rec_target_model
+                            row_attack_name = "all"
+                            row_defense_name = "all"
+                        elif group_by == "attack":
+                            key = rec_attack_name
+                            row_target_model = "all"
+                            row_attack_name = rec_attack_name
+                            row_defense_name = "all"
+                        else:
+                            key = f"{rec_target_model}||{rec_attack_name}||{rec_defense_name}"
+                            row_target_model = rec_target_model
+                            row_attack_name = rec_attack_name
+                            row_defense_name = rec_defense_name
+                        if key not in groups:
+                            groups[key] = {
+                                "target_model": row_target_model,
+                                "attack_name": row_attack_name,
+                                "defense_name": row_defense_name,
+                                "attack_model": str(rec.get("attack_model", "") or file_attack_model),
+                                "judge_model": str(rec.get("judge_model", "") or file_judge_model),
+                                "files": [],
+                                "_recs": [],
+                            }
+                        rel = os.path.relpath(fpath, RESULTS_DIR)
+                        if rel not in groups[key]["files"]:
+                            groups[key]["files"].append(rel)
+                        groups[key]["_recs"].append(rec)
+
+                except Exception:
+                    continue
+
+        for key, grp in groups.items():
+            recs = grp.pop("_recs")
+            n = len(recs)
+            if n == 0:
                 continue
 
-    rows: List[Dict[str, Any]] = []
-    for key, grp in groups.items():
-        recs = grp.pop("_recs")
-        n = len(recs)
-        if n == 0:
-            continue
+            def _f(r: Dict[str, Any], k: str, default: float = 0.0) -> float:
+                v = r.get(k, default)
+                try:
+                    return float(v) if v is not None else default
+                except (TypeError, ValueError):
+                    return default
 
-        def _f(r: Dict[str, Any], k: str, default: float = 0.0) -> float:
-            v = r.get(k, default)
-            try:
-                return float(v) if v is not None else default
-            except (TypeError, ValueError):
-                return default
+            n_attacked = sum(1 for r in recs if _coerce_bool(r.get("attack_success", False)))
+            n_task_ok = sum(1 for r in recs if _coerce_bool(r.get("task_success", False)))
+            n_malicious = sum(1 for r in recs if _coerce_bool(r.get("is_malicious", False)))
+            n_def_bypass = sum(1 for r in recs if _coerce_bool(r.get("defense_bypassed", False)))
 
-        n_attacked    = sum(1 for r in recs if _coerce_bool(r.get("attack_success", False)))
-        n_task_ok     = sum(1 for r in recs if _coerce_bool(r.get("task_success", False)))
-        n_malicious   = sum(1 for r in recs if _coerce_bool(r.get("is_malicious", False)))
-        n_def_bypass  = sum(1 for r in recs if _coerce_bool(r.get("defense_bypassed", False)))
+            total_tool_calls = sum(_f(r, "tool_calls_total") for r in recs)
+            total_correct = sum(_f(r, "tool_calls_correct") for r in recs)
+            total_wrong = sum(_f(r, "tool_calls_wrong") for r in recs)
+            total_harmful = sum(_f(r, "tool_calls_harmful") for r in recs)
+            total_queries = sum(_f(r, "queries") for r in recs)
+            total_duration = sum(_f(r, "duration") for r in recs)
 
-        total_tool_calls = sum(_f(r, "tool_calls_total") for r in recs)
-        total_correct    = sum(_f(r, "tool_calls_correct") for r in recs)
-        total_wrong      = sum(_f(r, "tool_calls_wrong") for r in recs)
-        total_harmful    = sum(_f(r, "tool_calls_harmful") for r in recs)
-        total_queries    = sum(_f(r, "queries") for r in recs)
-        total_duration   = sum(_f(r, "duration") for r in recs)
+            # Queries to jailbreak — average over jailbroken records only
+            jb_queries = [_f(r, "queries") for r in recs if _coerce_bool(r.get("attack_success", False))]
 
-        # Queries to jailbreak — average over jailbroken records only
-        jb_queries = [_f(r, "queries") for r in recs if _coerce_bool(r.get("attack_success", False))]
+            # DBR: fraction of malicious records where some defense (not none) was bypassed.
+            # This keeps DBR meaningful even when grouping by model or attack.
+            n_malicious_with_defense = sum(
+                1 for r in recs
+                if _coerce_bool(r.get("is_malicious", False))
+                and str(r.get("defense_name", "") or "none") != "none"
+            )
 
-        # DBR: fraction of malicious records where defense was bypassed
-        n_malicious_with_defense = sum(
-            1 for r in recs
-            if _coerce_bool(r.get("is_malicious", False)) and grp["defense_name"] != "none"
-        )
+            row = {
+                **{k: v for k, v in grp.items() if k != "files"},
+                "source_files": grp["files"],
+                "total_experiments": n,
+                "MIR": round(n_attacked / n, 4) if n else 0.0,
+                "Task_Success": round(n_task_ok / n, 4) if n else 0.0,
+                "TIR": round(total_tool_calls / n, 4) if n else 0.0,
+                "DBR": round(n_def_bypass / n_malicious_with_defense, 4)
+                if n_malicious_with_defense else 0.0,
+                "QTJ": round(sum(jb_queries) / len(jb_queries), 4) if jb_queries else None,
+                "avg_duration": round(total_duration / n, 4) if n else 0.0,
+                "avg_queries": round(total_queries / n, 4) if n else 0.0,
+                "total_tool_calls": int(total_tool_calls),
+                "avg_correct_tool_calls": round(total_correct / n, 4) if n else 0.0,
+                "avg_wrong_tool_calls": round(total_wrong / n, 4) if n else 0.0,
+                "avg_harmful_tool_calls": round(total_harmful / n, 4) if n else 0.0,
+                "n_malicious": n_malicious,
+            }
+            rows.append(row)
 
-        row = {
-            **{k: v for k, v in grp.items() if k != "files"},
-            "source_files": grp["files"],
-            "total_experiments": n,
-            "MIR":        round(n_attacked / n, 4) if n else 0.0,
-            "Task_Success": round(n_task_ok / n, 4) if n else 0.0,
-            "TIR":        round(total_tool_calls / n, 4) if n else 0.0,
-            "DBR":        round(n_def_bypass / n_malicious_with_defense, 4)
-                          if n_malicious_with_defense else 0.0,
-            "QTJ":        round(sum(jb_queries) / len(jb_queries), 4) if jb_queries else None,
-            "avg_duration": round(total_duration / n, 4) if n else 0.0,
-            "avg_queries":  round(total_queries / n, 4)  if n else 0.0,
-            "total_tool_calls":        int(total_tool_calls),
-            "avg_correct_tool_calls":  round(total_correct  / n, 4) if n else 0.0,
-            "avg_wrong_tool_calls":    round(total_wrong     / n, 4) if n else 0.0,
-            "avg_harmful_tool_calls":  round(total_harmful   / n, 4) if n else 0.0,
-            "n_malicious": n_malicious,
-        }
-        rows.append(row)
+        _store_cached_rows(agg_key, sig, rows)
 
-    # Sort: descending MIR
-    rows.sort(key=lambda r: r["MIR"], reverse=True)
-    return rows
+    sortable_keys = {
+        "total_experiments",
+        "MIR",
+        "Task_Success",
+        "TIR",
+        "DBR",
+        "QTJ",
+        "avg_duration",
+        "avg_queries",
+        "total_tool_calls",
+        "avg_correct_tool_calls",
+        "avg_wrong_tool_calls",
+        "avg_harmful_tool_calls",
+        "n_malicious",
+    }
+    chosen_sort = sort_key if sort_key in sortable_keys else "MIR"
+    reverse = sort_dir == "desc"
+    sorted_rows = sorted(
+        rows,
+        key=lambda r: r.get(chosen_sort) if isinstance(r.get(chosen_sort), (int, float)) else float("-inf"),
+        reverse=reverse,
+    )
+
+    total = len(sorted_rows)
+    paged_rows = sorted_rows[offset: offset + limit]
+
+    # Backwards-compat: old frontend expects a raw array and calls /leaderboard
+    # without any query params. If the request has no params, return full list.
+    if not request.query_params:
+        return sorted_rows
+
+    return {
+        "rows": paged_rows,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "has_more": (offset + limit) < total,
+        "group_by": group_by,
+        "sort_key": chosen_sort,
+        "sort_dir": sort_dir,
+    }
 
 
 @router.post("/sync")

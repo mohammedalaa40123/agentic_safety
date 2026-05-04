@@ -458,6 +458,8 @@ export default function Results() {
   const [groupBy, setGroupBy] = useState<GroupBy>('model')
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [records, setRecords] = useState<Record<string, unknown>[]>([])
+  const [loadingSummaries, setLoadingSummaries] = useState(true)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [hoveredRecord, setHoveredRecord] = useState<Record<string, unknown> | null>(null)
   const hoverAnchor = useRef<HTMLElement | null>(null)
@@ -466,7 +468,20 @@ export default function Results() {
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    api.getResultsSummary().then(setSummaries).catch(console.error)
+    async function loadSummaries() {
+      setLoadingSummaries(true)
+      setSummaryError(null)
+      try {
+        const data = await api.getResultsSummary()
+        setSummaries(data)
+      } catch (e) {
+        console.error(e)
+        setSummaryError('Failed to load results. Please refresh.')
+      } finally {
+        setLoadingSummaries(false)
+      }
+    }
+    loadSummaries()
   }, [])
 
   async function handleSelect(path: string) {
@@ -609,7 +624,9 @@ export default function Results() {
               Results
             </h1>
             <p className="text-slate-400 text-sm mt-1">
-              {summaries.length} experiment{summaries.length !== 1 ? 's' : ''} · browse and analyse evaluation outputs
+              {loadingSummaries
+                ? 'Loading results…'
+                : `${summaries.length} experiment${summaries.length !== 1 ? 's' : ''} · browse and analyse evaluation outputs`}
             </p>
           </div>
 
@@ -635,7 +652,23 @@ export default function Results() {
         </motion.div>
 
         {/* Card grid — grouped */}
-        {summaries.length === 0 ? (
+        {loadingSummaries ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="text-center py-20 text-slate-500 text-sm">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              className="w-6 h-6 border-2 border-slate-700 border-t-indigo-500 rounded-full mx-auto mb-3"
+            />
+            Loading results…
+          </motion.div>
+        ) : summaryError ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="text-center py-20 text-rose-300 text-sm">
+            <div className="text-4xl mb-3 opacity-30">⚠️</div>
+            {summaryError}
+          </motion.div>
+        ) : summaries.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="text-center py-20 text-slate-500 text-sm">
             <div className="text-4xl mb-3 opacity-30">📊</div>

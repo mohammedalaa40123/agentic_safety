@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Trophy, TrendingDown, Shield, Swords, RefreshCw,
-  ChevronUp, ChevronDown, Minus, Target, Zap, Activity,
+  Trophy, Swords, RefreshCw,
+  ChevronUp, ChevronDown, Minus, Target, Activity,
 } from 'lucide-react'
-import { api, type LeaderRow } from '../lib/api'
+import { api, type LeaderRow, type LeaderboardGroupBy } from '../lib/api'
 
 // ── Metric config ─────────────────────────────────────────────────────────────
 type SortKey = keyof LeaderRow | 'none'
@@ -149,18 +149,42 @@ export default function Leaderboard() {
   const [rows, setRows] = useState<LeaderRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [totalRows, setTotalRows] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(50)
+  const [groupBy, setGroupBy] = useState<LeaderboardGroupBy>('model')
   const [sortKey, setSortKey] = useState<keyof LeaderRow>('MIR')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [filterModel, setFilterModel] = useState('')
   const [filterAttack, setFilterAttack] = useState('')
   const [filterDefense, setFilterDefense] = useState('')
+  const [allModels, setAllModels] = useState<string[]>([])
+  const [allAttacks, setAllAttacks] = useState<string[]>([])
+  const [allDefenses, setAllDefenses] = useState<string[]>([])
 
   async function load() {
     setLoading(true)
     setError(null)
     try {
-      const data = await api.getLeaderboard()
-      setRows(data)
+      const data = await api.getLeaderboard({
+        groupBy,
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        sortKey,
+        sortDir,
+        filterModel,
+        filterAttack,
+        filterDefense,
+      })
+      // getLeaderboard is backward-compatible and may return either the raw
+      // array (old callers) or the paginated object. Narrow at runtime.
+      if (Array.isArray(data)) {
+        setRows(data)
+        setTotalRows(data.length)
+      } else {
+        setRows(data.rows)
+        setTotalRows(data.total)
+      }
     } catch (e) {
       setError(String(e))
     } finally {
@@ -168,34 +192,31 @@ export default function Leaderboard() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [groupBy, page, pageSize, sortKey, sortDir, filterModel, filterAttack, filterDefense])
 
-  // Unique filter options
-  const models   = useMemo(() => [...new Set(rows.map((r) => r.target_model))].sort(), [rows])
-  const attacks  = useMemo(() => [...new Set(rows.map((r) => r.attack_name))].sort(), [rows])
-  const defenses = useMemo(() => [...new Set(rows.map((r) => r.defense_name))].sort(), [rows])
+  useEffect(() => {
+    async function loadFilterOptions() {
+      try {
+        const summary = await api.getResultsSummary()
+        setAllModels([...new Set(summary.map((r) => r.target_model).filter(Boolean))].sort())
+        setAllAttacks([...new Set(summary.map((r) => r.attack_name).filter(Boolean))].sort())
+        setAllDefenses([...new Set(summary.map((r) => (r.defense_name || 'none')))].sort())
+      } catch {
+        setAllModels([])
+        setAllAttacks([])
+        setAllDefenses([])
+      }
+    }
+    loadFilterOptions()
+  }, [])
 
-  // Filter + sort
-  const filtered = useMemo(() => {
-    return rows
-      .filter((r) => {
-        if (filterModel   && r.target_model  !== filterModel)   return false
-        if (filterAttack  && r.attack_name   !== filterAttack)  return false
-        if (filterDefense && r.defense_name  !== filterDefense) return false
-        return true
-      })
-      .sort((a, b) => {
-        const av = a[sortKey] as number | null ?? -1
-        const bv = b[sortKey] as number | null ?? -1
-        if (typeof av !== 'number' || typeof bv !== 'number') return 0
-        return sortDir === 'desc' ? bv - av : av - bv
-      })
-  }, [rows, filterModel, filterAttack, filterDefense, sortKey, sortDir])
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize))
+  const pageRows = rows
 
   // Summary highlights
   const most_robust = useMemo(() => {
     const byModel = new Map<string, number[]>()
-    filtered.forEach((r) => {
+    pageRows.forEach((r) => {
       if (!byModel.has(r.target_model)) byModel.set(r.target_model, [])
       byModel.get(r.target_model)!.push(r.MIR)
     })
@@ -205,11 +226,11 @@ export default function Leaderboard() {
       if (avg < best.mir) best = { model, mir: avg }
     })
     return best
-  }, [filtered])
+  }, [pageRows])
 
   const hardest_attack = useMemo(() => {
     const byAtk = new Map<string, number[]>()
-    filtered.forEach((r) => {
+    pageRows.forEach((r) => {
       if (!byAtk.has(r.attack_name)) byAtk.set(r.attack_name, [])
       byAtk.get(r.attack_name)!.push(r.MIR)
     })
@@ -219,16 +240,25 @@ export default function Leaderboard() {
       if (avg > best.mir) best = { attack: atk, mir: avg }
     })
     return best
-  }, [filtered])
+  }, [pageRows])
 
   const best_tir = useMemo(() => {
-    if (!filtered.length) return null
-    return filtered.reduce((a, b) => (a.TIR > b.TIR ? a : b))
-  }, [filtered])
+    if (!pageRows.length) return null
+    return pageRows.reduce((a, b) => (a.TIR > b.TIR ? a : b))
+  }, [pageRows])
 
   function toggleSort(key: keyof LeaderRow) {
     if (key === sortKey) setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))
-    else { setSortKey(key); setSortDir('desc') }
+    else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+    setPage(1)
+  }
+
+  function onGroupChange(v: LeaderboardGroupBy) {
+    setGroupBy(v)
+    setPage(1)
   }
 
   return (
@@ -266,12 +296,12 @@ export default function Leaderboard() {
       )}
 
       {/* Summary cards */}
-      {filtered.length > 0 && (
+      {pageRows.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <SummaryCard icon={Trophy}      label="Most Robust Model"   value={most_robust.model || '—'} sub={`Avg MIR ${(most_robust.mir * 100).toFixed(1)}%`} color="#34d399" />
           <SummaryCard icon={Swords}      label="Hardest Attack"      value={hardest_attack.attack || '—'} sub={`Avg MIR ${(hardest_attack.mir * 100).toFixed(1)}%`} color="#f87171" />
-          <SummaryCard icon={Target}      label="Total Experiments"   value={String(filtered.reduce((s, r) => s + r.total_experiments, 0))} color="#818cf8" />
+          <SummaryCard icon={Target}      label="Experiments (This Page)"   value={String(pageRows.reduce((s, r) => s + r.total_experiments, 0))} color="#818cf8" />
           <SummaryCard icon={Activity}    label="Highest TIR"         value={best_tir ? `${best_tir.TIR.toFixed(2)} tools/run` : '—'} sub={best_tir?.target_model} color="#fb923c" />
         </motion.div>
       )}
@@ -279,11 +309,13 @@ export default function Leaderboard() {
       {/* Filters */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
         className="flex flex-wrap gap-4 items-center">
-        <FilterSelect label="Model"   options={models}   value={filterModel}   onChange={setFilterModel} />
-        <FilterSelect label="Attack"  options={attacks}  value={filterAttack}  onChange={setFilterAttack} />
-        <FilterSelect label="Defense" options={defenses} value={filterDefense} onChange={setFilterDefense} />
+        <FilterSelect label="Group" options={['combo', 'model', 'attack']} value={groupBy} onChange={(v) => onGroupChange(v as LeaderboardGroupBy)} />
+        <FilterSelect label="Model" options={allModels} value={filterModel} onChange={(v) => { setFilterModel(v); setPage(1) }} />
+        <FilterSelect label="Attack" options={allAttacks} value={filterAttack} onChange={(v) => { setFilterAttack(v); setPage(1) }} />
+        <FilterSelect label="Defense" options={allDefenses} value={filterDefense} onChange={(v) => { setFilterDefense(v); setPage(1) }} />
+        <FilterSelect label="Page Size" options={['25', '50', '100', '200']} value={String(pageSize)} onChange={(v) => { setPageSize(Number(v)); setPage(1) }} />
         <span className="text-xs text-slate-600 ml-auto">
-          {filtered.length} row{filtered.length !== 1 ? 's' : ''}
+          {totalRows} row{totalRows !== 1 ? 's' : ''}
         </span>
       </motion.div>
 
@@ -293,7 +325,7 @@ export default function Leaderboard() {
           <RefreshCw size={24} className="animate-spin mx-auto mb-3 opacity-40" />
           Loading leaderboard…
         </div>
-      ) : filtered.length === 0 ? (
+      ) : pageRows.length === 0 ? (
         <div className="text-center py-16 text-slate-500 text-sm">
           <div className="text-4xl mb-3 opacity-30">🏆</div>
           No results match the current filters.
@@ -329,7 +361,7 @@ export default function Leaderboard() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row, i) => (
+              {pageRows.map((row, i) => (
                 <motion.tr
                   key={`${row.target_model}-${row.attack_name}-${row.defense_name}`}
                   initial={{ opacity: 0 }}
@@ -384,6 +416,35 @@ export default function Leaderboard() {
             </tbody>
           </table>
         </motion.div>
+      )}
+
+      {!loading && totalRows > 0 && (
+        <div className="flex items-center justify-between text-xs text-slate-500">
+          <span>
+            Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalRows)} of {totalRows}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="px-2.5 py-1 rounded-lg disabled:opacity-40"
+              style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(99,102,241,0.2)', color: '#94a3b8' }}
+            >
+              Prev
+            </button>
+            <span className="min-w-[90px] text-center">Page {page} / {totalPages}</span>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="px-2.5 py-1 rounded-lg disabled:opacity-40"
+              style={{ background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(99,102,241,0.2)', color: '#94a3b8' }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
